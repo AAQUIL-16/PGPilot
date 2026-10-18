@@ -1,0 +1,22 @@
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+build/
+
+# Logs
+*.log
+
+# Editor files
+.vscode/
+.idea/
