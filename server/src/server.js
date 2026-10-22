@@ -16,10 +16,12 @@ async function startServer() {
       console.log(`PGPilot server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Database connection failed:");
-    console.error(error.message);
-    process.exit(1);
-  }
+  console.error("Database connection failed:");
+  console.error("Error code:", error.code);
+  console.error("Error message:", error.message);
+  console.error("Error details:", error.cause?.message);
+  process.exit(1);
+}
 }
 
 startServer();
