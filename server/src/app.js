@@ -2,7 +2,9 @@ const pool = require("./config/db");
 
 const express = require("express");
 
+const helmet = require("helmet");
 
+const { rateLimit } = require("express-rate-limit");
 
 const { searchNearbyPGs } = require("./services/googlePlacesService");
 
@@ -25,11 +27,29 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 
 const app = express();
 
+// Trust the Render reverse proxy
+app.set("trust proxy", 1);
+
+// Add standard HTTP security headers
+app.use(helmet());
+
+// Limit repeated login and registration attempts
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many authentication attempts. Please try again after 15 minutes.",
+  },
+});
+
 
 
 app.use(express.json({ limit: "20kb" }));
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 
 app.use("/api/favorites", favoriteRoutes);
 
