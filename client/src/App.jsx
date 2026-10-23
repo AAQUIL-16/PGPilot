@@ -257,25 +257,28 @@ const MATCH_WEIGHTS = {
   nearest: { commute: 20, distance: 65, rating: 15 },
 };
 
-function calculateMatchScore(pg, destinationLocation, commute, priority = "balanced") {
-  const minutes = Number(commute?.durationMinutes);
-  if (commute?.durationMinutes == null || !Number.isFinite(minutes)) return null;
-
-  const lat = Number(pg.latitude);
-  const lon = Number(pg.longitude);
-  const destinationLat = Number(destinationLocation?.latitude);
-  const destinationLon = Number(destinationLocation?.longitude);
-  if (![lat, lon, destinationLat, destinationLon].every(Number.isFinite)) return null;
-
-  const km = calculateDistance(destinationLat, destinationLon, lat, lon);
-  const clamp = (value) => Math.max(0, Math.min(1, value));
+// Explainable breakdown uses the exact same inputs and weights as the ranking score.
+function getMatchExplanation(pg, destinationLocation, commute, priority = "balanced") {
+  const minutes = commute?.durationMinutes == null ? null : Number(commute.durationMinutes);
+  const coords = [pg.latitude, pg.longitude, destinationLocation?.latitude, destinationLocation?.longitude];
+  if (minutes == null || !Number.isFinite(minutes) || coords.some((v) => v == null || !Number.isFinite(Number(v)))) return null;
+  const [lat, lon, destLat, destLon] = coords.map(Number);
+  const km = calculateDistance(destLat, destLon, lat, lon);
   const weights = MATCH_WEIGHTS[priority] || MATCH_WEIGHTS.balanced;
-  const commuteScore = clamp(1 - minutes / 30) * weights.commute;
-  const distanceScore = clamp(1 - km / 5) * weights.distance;
+  const clamp = (v) => Math.max(0, Math.min(1, v));
   const rating = pg.googleRating == null ? null : Number(pg.googleRating);
-  // An unrated property gets a neutral 2.5/5, not a fabricated review score.
-  const ratingScore = clamp((rating != null && Number.isFinite(rating) ? rating : 2.5) / 5) * weights.rating;
-  return Math.round(commuteScore + ratingScore + distanceScore);
+  const validRating = rating != null && Number.isFinite(rating) && rating >= 0 && rating <= 5;
+  const ratingValue = validRating ? rating : 2.5;
+  const parts = [
+    { label: "Commute time", points: clamp(1 - minutes / 30) * weights.commute, max: weights.commute, note: `${minutes.toFixed(1)} min estimated` },
+    { label: "Google rating", points: clamp(ratingValue / 5) * weights.rating, max: weights.rating, note: validRating ? `${rating}/5` : "Unrated · neutral 2.5/5 used" },
+    { label: "Straight-line distance", points: clamp(1 - km / 5) * weights.distance, max: weights.distance, note: `${km.toFixed(1)} km` },
+  ];
+  return { parts, total: Math.round(parts.reduce((sum, part) => sum + part.points, 0)), weights };
+}
+
+function calculateMatchScore(pg, destinationLocation, commute, priority = "balanced") {
+  return getMatchExplanation(pg, destinationLocation, commute, priority)?.total ?? null;
 }
 
 function App() {
@@ -3837,7 +3840,7 @@ function App() {
 
                           {/* Advanced filters and accommodation preferences */}
               {pgs.length > 0 && (
-                <section aria-label="PG filters and preferences" className="mb-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50">
+                <section aria-label="PG filters and preferences" className="mb-7 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50 sm:p-6">
                   <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h4 className="text-lg font-bold text-[#112747]">Filters &amp; PG Preferences</h4>
@@ -3847,6 +3850,7 @@ function App() {
                       if (pgPreference !== "all") { setPgPreference("all"); handleSearch({ preventDefault() {} }, "all"); }
                       setMinRating("any");
                       setMaxCommute("any"); setMaxDistance("any");
+                      setMatchPriority("balanced"); setSortBy("commute");
                     }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">
                       Clear Filters
                     </button>
@@ -3890,7 +3894,7 @@ function App() {
                      </select>
                      <p className="mt-2 text-xs text-slate-500">Scores are estimates from available commute, location and Google rating data; unrated listings use a neutral rating.</p>
                    </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <label className="text-sm font-semibold text-slate-700">Minimum Google rating
                       <select value={minRating} onChange={(event) => setMinRating(event.target.value)}
                         className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
@@ -3917,7 +3921,7 @@ function App() {
                     </label>
                   </div>
                   <p role="status" className="mt-5 text-sm font-semibold text-blue-800">
-                    Showing {filteredPGs.length} of {pgs.length} PGs
+                    Showing {filteredPGs.length} of {pgs.length} PGs · Sorted by {sortBy === "match" ? "Smart Match" : sortBy === "commute" ? "commute" : sortBy === "rating" ? "rating" : "distance"}
                     {maxCommute !== "any" && matrixLoading ? " · Calculating commute times…" : ""}
                   </p>
                 </section>
@@ -4352,6 +4356,21 @@ function App() {
                     <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label={`Match score for ${pg.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={matchScores[pg.googlePlaceId] == null ? undefined : Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}>
                       <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}%` }} />
                     </div>
+                    <details className="mb-4 rounded-2xl border border-blue-100 bg-blue-50/40 px-4 py-3 text-sm">
+                      <summary className="cursor-pointer font-bold text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">Why this match? · View score breakdown</summary>
+                      {(() => {
+                        const explanation = getMatchExplanation(pg, destinationLocation, commutes[pg.googlePlaceId]?.mode === travelMode ? commutes[pg.googlePlaceId] : null, matchPriority);
+                        if (!explanation) return <p className="mt-3 text-slate-600">Score unavailable until commute and location data are ready.</p>;
+                        return <div className="mt-3 space-y-3">
+                          {explanation.parts.map((part) => <div key={part.label}>
+                            <div className="flex justify-between gap-3"><span className="font-semibold text-slate-700">{part.label}</span><span className="font-bold text-[#112747]">{part.points.toFixed(1)} / {part.max}</span></div>
+                            <p className="mt-0.5 text-xs text-slate-500">{part.note}</p>
+                            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-blue-600" style={{ width: `${part.max ? part.points / part.max * 100 : 0}%` }} /></div>
+                          </div>)}
+                          <p className="border-t border-blue-100 pt-2 text-xs text-slate-600">Total: {explanation.total}/100 · Based on selected Smart Match preference. Not a verification of rent, safety or availability.</p>
+                        </div>;
+                      })()}
+                    </details>
                     <PGPhoto key={`${pg.googlePlaceId}-${pg.photoUrl || "none"}`} pg={pg} className="mb-4 h-52 overflow-hidden rounded-2xl ring-1 ring-slate-100 sm:h-56" />
 
                       {/* Compact Save and Compare actions */}
@@ -4995,7 +5014,7 @@ function App() {
       {detailPG && (() => {
         const id = detailPG.googlePlaceId;
         const commute = commutes[id]?.mode === travelMode ? commutes[id] : null;
-        const score = matchScores[id] ?? calculateMatchScore(detailPG, destinationLocation, commute);
+        const score = matchScores[id] ?? calculateMatchScore(detailPG, destinationLocation, commute, matchPriority);
         const category = inferPGPreference(detailPG);
         const categoryLabel = { men: "Men's PG", women: "Women's PG", coliving: "Co-living", unknown: "Category unconfirmed" }[category];
         const saved = favorites.some((item) => item.googlePlaceId === id);
@@ -5006,13 +5025,11 @@ function App() {
         const destLon = Number(destinationLocation?.longitude);
         const hasCoords = [lat, lon, destLat, destLon].every(Number.isFinite) && destinationLocation != null;
         const straightKm = hasCoords ? calculateDistance(destLat, destLon, lat, lon) : null;
-        const clamp = (v) => Math.max(0, Math.min(1, v));
+        const explanation = getMatchExplanation(detailPG, destinationLocation, commute, matchPriority);
+        const scoreParts = explanation?.parts || [];
         const minutes = commute?.durationMinutes == null ? null : Number(commute.durationMinutes);
         const validMinutes = minutes != null && Number.isFinite(minutes);
         const rating = detailPG.googleRating == null ? null : Number(detailPG.googleRating);
-        const commutePoints = validMinutes ? Math.round(clamp(1 - minutes / 30) * 45) : null;
-        const ratingPoints = Math.round(clamp((rating != null && Number.isFinite(rating) ? rating : 2.5) / 5) * 35);
-        const distancePoints = straightKm != null ? Math.round(clamp(1 - straightKm / 5) * 20) : null;
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(detailPG.name)}&query_place_id=${encodeURIComponent(id)}`;
         const directionsUrl = hasCoords
           ? `https://www.google.com/maps/dir/?api=1&origin=${destLat},${destLon}&destination=${lat},${lon}`
@@ -5039,21 +5056,17 @@ function App() {
                   <div className="rounded-2xl bg-blue-50 p-4"><p className="text-xs text-blue-700">PGPilot match</p><p className="mt-2 text-xl font-extrabold text-[#112747]">{score == null ? "Pending" : `${score}/100`}</p><p className="mt-1 text-xs text-blue-700">Rule-based score</p></div>
                 </div>
                 <div className="rounded-2xl border border-slate-200 p-5 sm:p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-extrabold text-[#112747]">Why this match score?</h3><span className="text-xs font-semibold text-slate-500">45% commute · 35% rating · 20% distance</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-extrabold text-[#112747]">Why this match score?</h3><span className="text-xs font-semibold text-slate-500">{`Commute ${MATCH_WEIGHTS[matchPriority].commute}% · Rating ${MATCH_WEIGHTS[matchPriority].rating}% · Distance ${MATCH_WEIGHTS[matchPriority].distance}%`}</span></div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">The score is calculated from estimated commute time, Google rating and straight-line distance. It does not verify rent, safety, availability or amenities.</p>
                   <div className="mt-5 space-y-4">
-                    {[
-                      { label: "Commute time", points: commutePoints, max: 45, note: validMinutes ? `${minutes} min` : "Not calculated" },
-                      { label: "Google rating", points: ratingPoints, max: 35, note: rating == null ? "Unrated · neutral score" : `${rating}/5` },
-                      { label: "Distance", points: distancePoints, max: 20, note: straightKm == null ? "Not available" : `${straightKm.toFixed(1)} km straight-line` },
-                    ].map((item) => (
+                    {scoreParts.map((item) => (
                       <div key={item.label}>
-                        <div className="mb-1.5 flex items-center justify-between gap-3 text-sm"><span className="font-semibold text-slate-800">{item.label} <span className="font-normal text-slate-500">· {item.note}</span></span><span className="font-bold text-[#112747]">{score == null || item.points == null ? "—" : `${item.points}/${item.max}`}</span></div>
+                        <div className="mb-1.5 flex items-center justify-between gap-3 text-sm"><span className="font-semibold text-slate-800">{item.label} <span className="font-normal text-slate-500">· {item.note}</span></span><span className="font-bold text-[#112747]">{score == null || item.points == null ? "—" : `${item.points.toFixed(1)}/${item.max}`}</span></div>
                         <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-blue-700 transition-all" style={{ width: `${score == null || item.points == null ? 0 : item.points / item.max * 100}%` }} /></div>
                       </div>
                     ))}
                   </div>
-                  <p className="mt-4 text-xs text-slate-500">Displayed breakdown points are rounded individually; the final match score is rounded after summing the underlying values.</p>
+                  <p className="mt-4 text-xs text-slate-500">Component points are shown to one decimal place; the total is rounded after summing. Changing Smart Match preference updates this breakdown and the ranking.</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                   <h3 className="font-extrabold text-[#112747]">About this property</h3>
