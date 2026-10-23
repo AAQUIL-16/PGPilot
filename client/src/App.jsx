@@ -4215,7 +4215,7 @@ function App() {
 
 
 
-              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
 
 
 
@@ -4329,7 +4329,7 @@ function App() {
 
 
 
-                      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 transition-all duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/70"
+                      className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200/90 bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_18px_45px_rgba(37,99,235,0.13)] sm:p-5"
 
 
 
@@ -4342,11 +4342,17 @@ function App() {
                         <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">PGPilot Match Score</p>
                         <p className="mt-1 text-xs text-slate-500">Personalized by your Smart Match preference</p>
                       </div>
-                      <span className="text-xl font-extrabold text-[#112747]">
-                        {matchScores[pg.googlePlaceId] == null ? "Pending" : `${matchScores[pg.googlePlaceId]}/100`}
-                      </span>
+                      <div className="text-right">
+                        <span className="block text-2xl font-extrabold tracking-tight text-[#112747]">
+                          {matchScores[pg.googlePlaceId] == null ? "Pending" : `${matchScores[pg.googlePlaceId]}/100`}
+                        </span>
+                        <span className="text-[11px] font-medium text-blue-700">Smart Match</span>
+                      </div>
                     </div>
-                    <PGPhoto key={`${pg.googlePlaceId}-${pg.photoUrl || "none"}`} pg={pg} className="mb-5 h-52 overflow-hidden rounded-2xl" />
+                    <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label={`Match score for ${pg.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={matchScores[pg.googlePlaceId] == null ? undefined : Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}>
+                      <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}%` }} />
+                    </div>
+                    <PGPhoto key={`${pg.googlePlaceId}-${pg.photoUrl || "none"}`} pg={pg} className="mb-4 h-52 overflow-hidden rounded-2xl ring-1 ring-slate-100 sm:h-56" />
 
                       {/* Compact Save and Compare actions */}
                       <div className="mb-4 grid grid-cols-2 gap-3">
@@ -4385,11 +4391,11 @@ function App() {
 
 
 
-                      <div className="mb-4 flex items-start justify-between gap-3">
+                      <div className="mb-3 flex items-start justify-between gap-3">
 
 
 
-                        <h4 className="text-lg font-bold">
+                        <h4 className="text-lg font-extrabold leading-snug tracking-tight text-slate-900">
 
 
 
@@ -4401,7 +4407,7 @@ function App() {
 
 
 
-                        <span className="shrink-0 rounded-lg bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">
+                        <span className="shrink-0 rounded-xl border border-amber-100 bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-700">
 
 
 
@@ -4493,7 +4499,7 @@ function App() {
 
 
 
-                        <div className="mb-4 rounded-xl bg-blue-50 px-4 py-3">
+                        <div className="mb-4 rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3">
 
 
 
@@ -4537,7 +4543,7 @@ function App() {
 
 
 
-                        <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                        <div className="mb-4 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-sky-50 p-4">
 
 
 
@@ -4787,7 +4793,7 @@ function App() {
 
                         onClick={() => setDetailPG(pg)}
 
-                        className="mb-3 mt-auto w-full rounded-xl border border-blue-700 bg-white px-5 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
+                        className="mb-3 mt-auto w-full rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-800 transition hover:border-blue-400 hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
 
                       >
 
@@ -4831,7 +4837,7 @@ function App() {
 
 
 
-                        className="mt-auto inline-flex justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
 
 
 
