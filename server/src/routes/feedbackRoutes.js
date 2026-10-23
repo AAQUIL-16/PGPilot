@@ -1,8 +1,21 @@
 
 const express = require("express");
 const pool = require("../config/db");
+const { rateLimit } = require("express-rate-limit");
 
 const router = express.Router();
+const feedbackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many feedback submissions. Please try again after 15 minutes."
+  }
+});
+
+router.use(feedbackLimiter);
 
 router.post("/", async (req, res) => {
   try {

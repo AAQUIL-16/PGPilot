@@ -58,15 +58,18 @@ router.post("/", async (req, res) => {
     }
 
     if (
-      address !== undefined &&
-      address !== null &&
-      typeof address !== "string"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid PG address",
-      });
-    }
+  address !== undefined &&
+  address !== null &&
+  (
+    typeof address !== "string" ||
+    address.length > 1000
+  )
+) {
+  return res.status(400).json({
+    success: false,
+    message: "PG address must not exceed 1000 characters",
+  });
+}
 
     if (
       rating !== undefined &&

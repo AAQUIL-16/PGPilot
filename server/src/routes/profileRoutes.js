@@ -44,11 +44,11 @@ router.patch("/", authMiddleware, async (req, res) => {
     if (
       typeof name !== "string" ||
       name.trim().length < 2 ||
-      name.trim().length > 80
+      name.trim().length > 100
     ) {
       return res.status(400).json({
         success: false,
-        message: "Name must contain 2 to 80 characters",
+        message: "Name must contain 2 to 100 characters",
       });
     }
 
