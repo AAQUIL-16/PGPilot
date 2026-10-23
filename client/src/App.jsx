@@ -2770,12 +2770,12 @@ function App() {
 
         {/* Refined responsive product navigation */}
         <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 shadow-[0_2px_18px_rgba(15,23,42,0.04)] backdrop-blur-xl">
-          <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6" aria-label="Main navigation">
+          <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:py-4" aria-label="Main navigation">
             <a href="#home" onClick={(event) => { event.preventDefault(); setView("home"); setShowFavorites(false); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="group flex items-center gap-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" aria-label="PGPilot home">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#112747] text-lg font-black text-white shadow-sm transition group-hover:bg-blue-700">P<span className="text-sky-400">.</span></span>
               <span className="text-xl font-extrabold tracking-tight text-[#112747]">PG<span className="text-blue-700">Pilot</span></span>
             </a>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 sm:w-auto sm:justify-end sm:border-t-0 sm:pt-0 sm:gap-3">
               <button type="button" onClick={() => { setView("home"); setShowFavorites(false); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${view === "home" && !showFavorites ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-100 hover:text-[#112747]"}`}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
                 <span>Explore PGs</span>
@@ -3426,7 +3426,7 @@ function App() {
 
         {/* Premium Homepage Hero */}
 
-        <section className="relative overflow-hidden bg-[#112747] px-6 py-20 text-white sm:py-28">
+        <section className="relative isolate overflow-hidden bg-[#112747] px-4 py-16 text-white sm:px-6 sm:py-24 lg:py-28">
 
           <div className="pointer-events-none absolute -right-24 -top-40 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl" />
 
@@ -3440,7 +3440,7 @@ function App() {
 
             </span>
 
-            <h2 className="mx-auto mt-8 max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">
+            <h2 className="mx-auto mt-8 max-w-4xl text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
 
               Find a place that <span className="block text-blue-300">fits your life.</span>
 
@@ -3456,7 +3456,7 @@ function App() {
 
             <form id="search" onSubmit={handleSearch}
 
-              className="mx-auto mt-10 flex max-w-3xl flex-col gap-3 rounded-2xl border border-white/20 bg-white p-3 shadow-2xl sm:flex-row">
+              className="mx-auto mt-10 flex max-w-3xl flex-col gap-3 rounded-2xl border border-white/20 bg-white p-3 shadow-[0_24px_70px_rgba(0,0,0,0.25)] sm:flex-row sm:items-center">
 
               <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
 
@@ -3470,7 +3470,7 @@ function App() {
 
                   aria-label="College or workplace destination"
 
-                  className="w-full min-w-0 py-3 text-base text-slate-900 outline-none placeholder:text-slate-400"
+                  className="w-full min-w-0 py-3 text-base text-slate-900 outline-none placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
 
                   required />
 
@@ -3478,7 +3478,7 @@ function App() {
 
               <button type="submit" disabled={loading}
 
-                className="rounded-xl bg-blue-700 px-8 py-4 font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                className="min-h-12 rounded-xl bg-blue-700 px-8 py-3.5 font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
 
                 {loading ? "Searching..." : "Find PGs →"}
 
@@ -3486,11 +3486,15 @@ function App() {
 
             </form>
 
-            <p className="mt-4 text-sm text-slate-400">
-
-              Popular searches: VIT Vellore · Anna University · Tidel Park
-
-            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-label="Popular destinations">
+              <span className="mr-1 text-xs font-semibold text-slate-400">Popular destinations</span>
+              {["VIT Vellore", "Anna University", "Tidel Park"].map((place) => (
+                <button key={place} type="button" onClick={() => setDestination(place)}
+                  className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 transition hover:border-blue-300 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+                  {place}
+                </button>
+              ))}
+            </div>
 
             {error && (
 
@@ -3516,7 +3520,7 @@ function App() {
 
                 <div key={feature.title}
 
-                  className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-left backdrop-blur-sm">
+                  className="rounded-2xl border border-white/15 bg-white/[0.07] p-5 text-left shadow-sm backdrop-blur-sm transition-transform duration-200 hover:-translate-y-1 hover:bg-white/[0.1]">
 
                   <span className="text-2xl text-blue-300" aria-hidden="true">{feature.icon}</span>
 
