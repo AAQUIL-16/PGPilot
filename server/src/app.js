@@ -950,6 +950,35 @@ app.post("/api/commute/matrix", async (req, res) => {
 
 });
 
+// Handle unknown API routes
+app.use("/api", (req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: "API endpoint not found",
+  });
+});
+
+// Handle unexpected application errors
+app.use((err, req, res, next) => {
+  console.error("Unhandled API error:", err.message);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  // Handle invalid JSON request bodies
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON request body",
+    });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: "Internal server error. Please try again later.",
+  });
+});
 
 
 module.exports = app;
