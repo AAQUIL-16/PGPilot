@@ -100,23 +100,7 @@ The following features are implemented in the application but are **not illustra
 
 ## 🏗️ System Architecture
 
-```mermaid
-flowchart TD
-    U[User / Browser] --> FE[React + Vite + Tailwind CSS]
-    FE --> API[Express REST API]
-    API --> AUTH[Authentication & user endpoints]
-    API --> PG[PG discovery endpoints]
-    API --> ROUTE[Geocoding & commute endpoints]
-    API --> DATA[Saved PGs / History / Feedback / Stats]
-    AUTH --> DB[(PostgreSQL)]
-    DATA --> DB
-    PG --> PLACES[Google Places API]
-    ROUTE --> ORS[Routing / Geocoding service]
-    FE --> SCORE[Explainable Smart Match ranking]
-    PG --> SCORE
-    ROUTE --> SCORE
-    SCORE --> RESULTS[Filtered & ranked PG cards]
-```
+![PGPilot System Architecture](Screenshots/Architecture.png)
 
 ### Component responsibilities
 
