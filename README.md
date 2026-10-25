@@ -62,25 +62,25 @@ Traditional accommodation searches can make it difficult to:
 
 ### 1. Homepage — destination-first discovery
 
-![PGPilot homepage](screenshots/homepage.png)
+![PGPilot homepage](Screenshots/homepage.png)
 
 The homepage introduces the destination-based search workflow, quick destination suggestions, and the platform's three core capabilities: listing discovery, commute insights, and saved properties.
 
 ### 2. Community statistics
 
-![PGPilot community statistics](screenshots/community.png)
+![PGPilot community statistics](Screenshots/community.png)
 
 The statistics section presents platform activity. Counts and averages are loaded from the application's statistics endpoint rather than being hard-coded into the interface.
 
 ### 3. Search results header
 
-![PGPilot results search](screenshots/results-search.png)
+![PGPilot results search](Screenshots/results-search.png)
 
 After searching, users can review their destination and the number of discovered listings before examining the results, travel estimates, and filters.
 
 ### 4. Travel mode selector
 
-![PGPilot travel mode selector](screenshots/travel-modes.png)
+![PGPilot travel mode selector](Screenshots/travel-modes.png)
 
 Users can switch between driving, walking, and cycling. The interface displays calculation status for the selected travel mode.
 
