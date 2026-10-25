@@ -2771,7 +2771,11 @@ function App() {
         <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 shadow-[0_2px_18px_rgba(15,23,42,0.04)] backdrop-blur-xl">
           <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:py-4" aria-label="Main navigation">
             <a href="#home" onClick={(event) => { event.preventDefault(); setView("home"); setShowFavorites(false); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="group flex items-center gap-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" aria-label="PGPilot home">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#112747] text-lg font-black text-white shadow-sm transition group-hover:bg-blue-700">P<span className="text-sky-400">.</span></span>
+              <img
+  src="logo.png"
+  alt="PGPilot"
+  className="h-10 w-10 rounded-xl object-cover shadow-sm transition-transform group-hover:scale-105"
+/>
               <span className="text-xl font-extrabold tracking-tight text-[#112747]">PG<span className="text-blue-700">Pilot</span></span>
             </a>
             <div className="flex w-full flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3 sm:w-auto sm:border-t-0 sm:pt-0">
