@@ -19,60 +19,42 @@ import AuthForm from "./AuthForm";
 
 
 const TRAVEL_MODES = {
-
-
-
-  "driving-car": {
-
-
-
-    label: "Driving",
-
-
-
-    icon: "🚗",
-
-
-
-  },
-
-
-
-  "foot-walking": {
-
-
-
-    label: "Walking",
-
-
-
-    icon: "🚶",
-
-
-
-  },
-
-
-
-  "cycling-regular": {
-
-
-
-    label: "Cycling",
-
-
-
-    icon: "🚲",
-
-
-
-  },
-
-
-
+  "driving-car": { label: "Driving" },
+  "foot-walking": { label: "Walking" },
+  "cycling-regular": { label: "Cycling" },
 };
 
+// Inline SVGs keep the travel selector consistent without extra dependencies.
+function TravelModeIcon({ mode, className = "h-6 w-6" }) {
+  const shared = { className, fill: "none", stroke: "currentColor", strokeWidth: 1.8,
+    strokeLinecap: "round", strokeLinejoin: "round", viewBox: "0 0 24 24", "aria-hidden": true };
+  if (mode === "driving-car") return (
+    <svg {...shared}><path d="M5 17H3v-5l2-6h14l2 6v5h-2"/><path d="M5 17h14M3 12h18M7 6l-2 6m12-6 2 6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+  );
+  if (mode === "foot-walking") return (
+    <svg {...shared}><circle cx="13" cy="4" r="2"/><path d="m7 21 3-5 2-4m-2-4 3 2 3 1 3 4M10 8l-3 4-3 1m8-1-2 4 5 5"/></svg>
+  );
+  return (
+    <svg {...shared}><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="m5.5 17 4-9 4 9h-8m8 0 5-9h-5m-4-3h3"/></svg>
+  );
+}
 
+
+// Consistent outline icons for the account menu (no additional package required).
+function AccountMenuIcon({ name, className = "h-[19px] w-[19px]" }) {
+  const paths = {
+    user: <><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>,
+    compare: <><path d="M4 7h16M4 17h16"/><path d="m8 3-4 4 4 4m8 2 4 4-4 4"/></>,
+    history: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+    settings: <><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></>,
+    feedback: <><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z"/><path d="M8 11.5h9"/></>,
+    help: <><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.1.9-1.7 1.4-1.7 3.2"/><path d="M12 17h.01"/></>,
+    logout: <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/><path d="M14 8l4 4-4 4m4-4H9"/></>,
+    shield: <><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></>,
+  };
+  return <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.user}</svg>;
+}
 
 // Calculate straight-line distance in kilometers
 
@@ -352,6 +334,15 @@ function App() {
   const [minRating, setMinRating] = useState("any");
   const [maxCommute, setMaxCommute] = useState("any");
   const [maxDistance, setMaxDistance] = useState("any");
+  // Draft selections are applied together using the Apply Filters button.
+  const [filterDraft, setFilterDraft] = useState({
+    preference: "all", rating: "any", commute: "any", distance: "any", priority: "balanced"
+  });
+  const [filterNotice, setFilterNotice] = useState("");
+  // Optional custom numeric limits; only used when the corresponding dropdown is Custom.
+  const [customCommute, setCustomCommute] = useState("");
+  const [customDistance, setCustomDistance] = useState("");
+
 
 
 
@@ -1469,12 +1460,17 @@ function App() {
 
 
 
-    setSortBy("commute");
+    if (isNewDestination || typeof preferenceOverride !== "string") setSortBy("commute");
     if (isNewDestination) {
       setPgPreference("all");
       setMinRating("any");
       setMaxCommute("any");
       setMaxDistance("any");
+      setFilterDraft({ preference: "all", rating: "any", commute: "any", distance: "any", priority: "balanced" });
+      setCustomCommute("");
+      setCustomDistance("");
+      setMatchPriority("balanced");
+      setFilterNotice("");
     }
 
 
@@ -2778,19 +2774,23 @@ function App() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#112747] text-lg font-black text-white shadow-sm transition group-hover:bg-blue-700">P<span className="text-sky-400">.</span></span>
               <span className="text-xl font-extrabold tracking-tight text-[#112747]">PG<span className="text-blue-700">Pilot</span></span>
             </a>
-            <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 sm:w-auto sm:justify-end sm:border-t-0 sm:pt-0 sm:gap-3">
-              <button type="button" onClick={() => { setView("home"); setShowFavorites(false); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${view === "home" && !showFavorites ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-100 hover:text-[#112747]"}`}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-                <span>Explore PGs</span>
-              </button>
+            <div className="flex w-full flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3 sm:w-auto sm:border-t-0 sm:pt-0">
+              <div className="flex items-center gap-5 sm:gap-7">
+                <button type="button" onClick={() => { setView("home"); setShowFavorites(false); window.scrollTo({top:0,behavior:"smooth"}); }} aria-current={!showFavorites ? "page" : undefined} className={`group relative inline-flex items-center gap-2 py-3 text-sm font-semibold transition-colors ${!showFavorites ? "text-blue-700" : "text-slate-600 hover:text-blue-700"}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                  <span>Discover</span>
+                  <span className={`absolute bottom-0 left-0 h-[3px] w-full rounded-full bg-blue-600 transition-transform ${!showFavorites ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
+                </button>
+                {token && <button type="button" onClick={() => { setShowFavorites(true); setAccountMenuOpen(false); window.scrollTo({top:0,behavior:"smooth"}); }} aria-current={showFavorites ? "page" : undefined} className={`group relative inline-flex items-center gap-2 py-3 text-sm font-semibold transition-colors ${showFavorites ? "text-blue-700" : "text-slate-600 hover:text-blue-700"}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]" aria-hidden="true"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  <span>Wishlist</span>
+                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[11px] font-bold text-blue-700">{favorites.length}</span>
+                  <span className={`absolute bottom-0 left-0 h-[3px] w-full rounded-full bg-blue-600 transition-transform ${showFavorites ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
+                </button>}
+              </div>
               {token ? (
                 <>
-                  <button type="button" onClick={() => setShowFavorites((previous) => !previous)} aria-expanded={showFavorites} className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${showFavorites ? "bg-rose-50 text-rose-700" : "text-slate-600 hover:bg-slate-100 hover:text-[#112747]"}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-                    <span>Saved PGs</span>
-                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-rose-100 px-1.5 py-0.5 text-[11px] font-bold leading-none text-rose-700">{favorites.length}</span>
-                  </button>
-                  <span className="hidden h-7 w-px bg-slate-200 sm:block" aria-hidden="true" />
+                  
                   <div className="relative" ref={accountMenuRef}>
 
 
@@ -2815,7 +2815,7 @@ function App() {
 
 
 
-                      className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
+                      className="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-[#112747] shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
 
 
 
@@ -2839,7 +2839,7 @@ function App() {
 
 
 
-                      <span aria-hidden="true" className="text-slate-500">⌄</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-slate-500 transition-transform ${accountMenuOpen ? "rotate-180" : ""}`} aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
 
 
 
@@ -2848,42 +2848,45 @@ function App() {
 
 
                     {accountMenuOpen && (
-                      <div role="menu" aria-label="Account menu" className="absolute right-0 top-full z-50 mt-3 w-[min(92vw,340px)] overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_22px_65px_rgba(15,23,42,0.18)]">
-                        <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 px-3 py-4">
-                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#112747] text-lg font-bold text-white">{(account?.name || "U").charAt(0).toUpperCase()}</span>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-[#112747]">{account?.name || "PGPilot Member"}</p>
-                            <p className="truncate text-xs text-slate-500">{account?.email || "Signed in"}</p>
-                            <p className="mt-1 text-[11px] font-semibold text-blue-700">PGPilot member</p>
+                      <div role="menu" aria-label="Account menu" className="absolute right-0 top-full z-50 mt-3 w-[min(92vw,360px)] max-h-[min(82vh,720px)] overflow-y-auto rounded-[22px] border border-slate-200/90 bg-white p-3 shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+                        <div className="flex items-center gap-3 rounded-2xl bg-[#f1f6fd] px-3.5 py-3.5">
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#112e5a] text-lg font-bold text-white shadow-sm">{(account?.name || "U").charAt(0).toUpperCase()}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[15px] font-bold text-[#102746]">{account?.name || "PGPilot Member"}</p>
+                            <p className="mt-0.5 truncate text-xs text-slate-500">{account?.email || "Signed in"}</p>
+                            <p className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-blue-700"><AccountMenuIcon name="shield" className="h-3.5 w-3.5"/> PGPilot Member</p>
                           </div>
                         </div>
-                        <p className="px-3 pb-1 pt-4 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">My account</p>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setShowProfile(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
-                          <span className="text-lg text-blue-700">◉</span><span className="flex-1"><span className="block text-sm font-semibold text-slate-800">My Profile</span><span className="block text-xs text-slate-500">Personal information and account</span></span><span className="text-slate-400">›</span>
-                        </button>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setShowFavorites(true); window.scrollTo({top:0,behavior:"smooth"}); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
-                          <span className="text-lg text-rose-600">♡</span><span className="flex-1"><span className="block text-sm font-semibold text-slate-800">Saved PGs <span className="ml-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">{favorites.length}</span></span><span className="block text-xs text-slate-500">Your shortlisted properties</span></span><span className="text-slate-400">›</span>
-                        </button>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); if (selectedPGIds.length) { setView("results"); setShowFavorites(false); setTimeout(() => document.getElementById("pgpilot-compare-section")?.scrollIntoView({behavior:"smooth",block:"start"}), 120); } else { setView("results"); setShowFavorites(false); window.scrollTo({top:0,behavior:"smooth"}); } }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
-                          <span className="text-lg text-blue-700">⇄</span><span className="flex-1"><span className="block text-sm font-semibold text-slate-800">Compare PGs <span className="text-xs text-slate-500">({selectedPGIds.length}/3)</span></span><span className="block text-xs text-slate-500">{selectedPGIds.length ? "Review selected properties" : "Select properties from search results"}</span></span><span className="text-slate-400">›</span>
-                        </button>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setShowSearchHistory(true); loadSearchHistory(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-blue-50">
-                          <span className="text-lg text-blue-700">◷</span><span className="flex-1"><span className="block text-sm font-semibold text-slate-800">My Search History</span><span className="block text-xs text-slate-500">Review and repeat past searches</span></span><span className="text-slate-400">›</span>
-                        </button>
+                        <p className="px-2.5 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">My workspace</p>
+                        {[
+                          { icon: "user", title: "My Profile", desc: "Personal details", action: () => setShowProfile(true) },
+                          { icon: "heart", title: "Wishlist", desc: "Your saved properties", count: favorites.length, action: () => { setShowFavorites(true); window.scrollTo({top:0,behavior:"smooth"}); } },
+                          { icon: "compare", title: "Compare PGs", desc: "Compare up to 3 properties", count: `${selectedPGIds.length}/3`, action: () => { setView("results"); setShowFavorites(false); if (selectedPGIds.length) setTimeout(() => document.getElementById("pgpilot-compare-section")?.scrollIntoView({behavior:"smooth",block:"start"}),120); else window.scrollTo({top:0,behavior:"smooth"}); } },
+                          { icon: "history", title: "Search History", desc: "Your recent searches", action: () => { setShowSearchHistory(true); loadSearchHistory(); } },
+                        ].map((item) => (
+                          <button key={item.title} type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); item.action(); }} className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors group-hover:bg-blue-50 group-hover:text-blue-700"><AccountMenuIcon name={item.icon}/></span>
+                            <span className="min-w-0 flex-1"><span className="flex items-center gap-2 text-[13px] font-semibold text-slate-800">{item.title}{item.count !== undefined && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">{item.count}</span>}</span><span className="mt-0.5 block text-[11px] text-slate-500">{item.desc}</span></span>
+                            <span className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">›</span>
+                          </button>
+                        ))}
                         <div className="mx-2 my-2 border-t border-slate-100" />
-                        <p className="px-3 pb-1 pt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Support & preferences</p>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setShowProfile(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-blue-50"><span className="text-lg">⚙</span> Account Settings <span className="ml-auto text-slate-400">›</span></button>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setFeedbackError(""); setFeedbackSuccess(false); setShowFeedback(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-blue-50">
-                          <span className="text-lg" aria-hidden="true">✎</span>
-                          Give Feedback
-                          <span className="ml-auto text-slate-400">›</span>
-                        </button>
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setShowHelpSupport(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-blue-50"><span className="text-lg">?</span> Help & Support <span className="ml-auto text-slate-400">›</span></button>
+                        <p className="px-2.5 pb-1 pt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Preferences & support</p>
+                        {[
+                          { icon: "settings", title: "Account Settings", action: () => setShowProfile(true) },
+                          { icon: "feedback", title: "Give Feedback", action: () => { setFeedbackError(""); setFeedbackSuccess(false); setShowFeedback(true); } },
+                          { icon: "help", title: "Help & Support", action: () => setShowHelpSupport(true) },
+                        ].map((item) => (
+                          <button key={item.title} type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); item.action(); }} className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                            <span className="flex h-9 w-10 shrink-0 items-center justify-center text-slate-500 group-hover:text-blue-700"><AccountMenuIcon name={item.icon}/></span>
+                            <span className="flex-1 text-[13px] font-semibold text-slate-700">{item.title}</span>
+                            <span className="text-slate-300 group-hover:text-blue-600" aria-hidden="true">›</span>
+                          </button>
+                        ))}
                         <div className="mx-2 my-2 border-t border-slate-100" />
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); handleLogout(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold text-rose-600 hover:bg-rose-50"><span className="text-lg">↪</span> Log out</button>
+                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); handleLogout(); }} className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-500"><span className="flex h-9 w-10 items-center justify-center"><AccountMenuIcon name="logout"/></span> Log out</button>
                       </div>
                     )}
-
                   </div>
 
 
@@ -3198,347 +3201,99 @@ function App() {
 
 
         {token && showFavorites && (
-
-
-
-          <section className="mx-auto max-w-7xl px-6 pt-10" aria-label="Saved PGs">
-
-
-
-            <div className="rounded-2xl border border-rose-100 bg-white p-6 shadow-sm">
-
-
-
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-
-
-
-                <div>
-
-
-
-                  <h2 className="text-2xl font-bold">♥ Your Saved PGs</h2>
-
-
-
-                  <p className="mt-1 text-sm text-slate-500">
-
-
-
-                    Your personal shortlist, available whenever you sign in.
-
-
-
-                  </p>
-
-
-
+          <section className="mx-auto min-h-[70vh] max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:pt-14" aria-label="Wishlist">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-7">
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  Your personal collection
                 </div>
-
-
-
-                <button
-
-
-
-                  type="button"
-
-
-
-                  onClick={() => setShowFavorites(false)}
-
-
-
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold"
-
-
-
-                >
-
-
-
-                  Close
-
-
-
-                </button>
-
-
-
+                <h1 className="text-3xl font-extrabold tracking-tight text-[#112747] sm:text-4xl">My Wishlist</h1>
+                <p className="mt-2 text-sm leading-6 text-slate-500">Keep your favorite PGs in one place and revisit them whenever you want.</p>
               </div>
-
-
-
-              {favoritesBusy ? (
-
-
-
-                <p className="text-slate-600">Loading saved PGs...</p>
-
-
-
-              ) : favorites.length === 0 ? (
-
-
-
-                <p className="text-slate-600">No saved PGs yet. Use the heart button on any listing.</p>
-
-
-
-              ) : (
-
-
-
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-
-
-
-                  {favorites.map((pg) => (
-
-
-
-                    <article key={pg.googlePlaceId} className="flex flex-col rounded-xl border border-slate-200 p-5">
-
-
-
-                      <h3 className="font-bold text-slate-900">{pg.name}</h3>
-
-
-
-                      <p className="mt-2 flex-1 text-sm text-slate-600">{pg.address}</p>
-
-
-
-                      <p className="mt-3 text-sm font-semibold text-amber-700">
-
-
-
-                        {pg.googleRating == null ? "No Google rating" : `★ ${pg.googleRating}`}
-
-
-
-                        {pg.googleRatingCount != null ? ` · ${pg.googleRatingCount} reviews` : ""}
-
-
-
-                      </p>
-
-
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-
-
-
-                        <a
-
-
-
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pg.name)}&query_place_id=${encodeURIComponent(pg.googlePlaceId)}`}
-
-
-
-                          target="_blank"
-
-
-
-                          rel="noopener noreferrer"
-
-
-
-                          className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-
-
-
-                        >
-
-
-
-                          View on Maps
-
-
-
-                        </a>
-
-
-
-                        <button
-
-
-
-                          type="button"
-
-
-
-                          onClick={() => toggleFavorite(pg)}
-
-
-
-                          disabled={favoritePendingId !== null || favoritesBusy}
-
-
-
-                          className="rounded-lg border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50"
-
-
-
-                        >
-
-
-
-                          Remove
-
-
-
-                        </button>
-
-
-
-                      </div>
-
-
-
-                    </article>
-
-
-
-                  ))}
-
-
-
-                </div>
-
-
-
-              )}
-
-
-
+              <button type="button" onClick={() => { setShowFavorites(false); setView("home"); window.scrollTo({top:0,behavior:"smooth"}); }} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700">
+                <span aria-hidden="true">←</span> Explore PGs
+              </button>
             </div>
-
-
-
+            {favoritesBusy ? (
+              <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center text-sm text-slate-600" role="status">Loading your saved PGs...</div>
+            ) : favorites.length === 0 ? (
+              <div className="mx-auto flex max-w-2xl flex-col items-center rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8" aria-hidden="true"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+                <h2 className="text-xl font-bold text-[#112747]">Your wishlist is waiting</h2>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Save PGs you like while exploring. They will appear here so you can easily compare your options later.</p>
+                <button type="button" onClick={() => { setShowFavorites(false); setView("home"); window.scrollTo({top:0,behavior:"smooth"}); }} className="mt-6 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">Explore available PGs</button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center justify-between gap-3"><p className="text-sm font-medium text-slate-600"><span className="font-bold text-[#112747]">{favorites.length}</span> saved {favorites.length === 1 ? "property" : "properties"}</p><p className="hidden text-xs text-slate-400 sm:block">Your saved places stay linked to your account</p></div>
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {favorites.map((pg) => (
+                    <article key={pg.googlePlaceId} className="group flex min-h-[235px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
+                      <div className="mb-4 flex items-start justify-between gap-3"><span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">Saved property</span><button type="button" onClick={() => toggleFavorite(pg)} disabled={favoritePendingId !== null || favoritesBusy} aria-label={`Remove ${pg.name} from wishlist`} title="Remove from wishlist" className="rounded-full p-2 text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button></div>
+                      <h3 className="line-clamp-2 text-lg font-bold leading-snug text-[#112747]">{pg.name}</h3>
+                      <p className="mt-2 flex-1 text-sm leading-6 text-slate-500">{pg.address || "Address not available"}</p>
+                      <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4"><span className="text-amber-500" aria-hidden="true">★</span><span className="text-sm font-bold text-slate-800">{pg.googleRating == null ? "Not rated" : Number(pg.googleRating).toFixed(1)}</span>{pg.googleRatingCount != null && <span className="text-xs text-slate-400">({pg.googleRatingCount} reviews)</span>}</div>
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pg.name)}&query_place_id=${encodeURIComponent(pg.googlePlaceId)}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#112747] px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">View on Google Maps <span aria-hidden="true">↗</span></a>
+                    </article>
+                  ))}
+                </div>
+              </>
+            )}
           </section>
-
-
-
         )}
 
+        {!showFavorites && view === "home" && (<>
 
-
-        {view === "home" && (<>
-
-        {/* Premium Homepage Hero */}
-
-        <section className="relative isolate overflow-hidden bg-[#112747] px-4 py-16 text-white sm:px-6 sm:py-24 lg:py-28">
-
-          <div className="pointer-events-none absolute -right-24 -top-40 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl" />
-
-          <div className="pointer-events-none absolute -bottom-40 left-0 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl" />
-
-          <div className="relative mx-auto max-w-5xl text-center">
-
-            <span className="inline-flex rounded-full border border-blue-300/25 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-200">
-
-              Smarter accommodation discovery
-
-            </span>
-
-            <h2 className="mx-auto mt-8 max-w-4xl text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
-
-              Find a place that <span className="block text-blue-300">fits your life.</span>
-
-            </h2>
-
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-
-              Explore real PG listings near your college or workplace.
-
-              Compare commute times and choose a stay that works for you.
-
-            </p>
-
-            <form id="search" onSubmit={handleSearch}
-
-              className="mx-auto mt-10 flex max-w-3xl flex-col gap-3 rounded-2xl border border-white/20 bg-white p-3 shadow-[0_24px_70px_rgba(0,0,0,0.25)] sm:flex-row sm:items-center">
-
-              <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
-
-                <span className="text-xl text-blue-700" aria-hidden="true">⌖</span>
-
-                <input type="text" value={destination}
-
-                  onChange={(event) => setDestination(event.target.value)}
-
-                  placeholder="Enter your college or workplace"
-
-                  aria-label="College or workplace destination"
-
-                  className="w-full min-w-0 py-3 text-base text-slate-900 outline-none placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
-
-                  required />
-
+        {/* Refined homepage hero — existing search logic preserved */}
+        <section className="relative isolate overflow-hidden bg-[#102747] px-5 py-16 text-white sm:px-8 sm:py-20 lg:py-24">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_12%,rgba(59,130,246,0.18),transparent_38%),radial-gradient(ellipse_at_5%_100%,rgba(56,189,248,0.09),transparent_42%)]" />
+          <div className="relative mx-auto max-w-6xl">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/25 bg-sky-300/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-sky-200">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Discover smarter stays
               </div>
-
-              <button type="submit" disabled={loading}
-
-                className="min-h-12 rounded-xl bg-blue-700 px-8 py-3.5 font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
-
-                {loading ? "Searching..." : "Find PGs →"}
-
-              </button>
-
-            </form>
-
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-label="Popular destinations">
-              <span className="mr-1 text-xs font-semibold text-slate-400">Popular destinations</span>
-              {["VIT Vellore", "Anna University", "Tidel Park"].map((place) => (
-                <button key={place} type="button" onClick={() => setDestination(place)}
-                  className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 transition hover:border-blue-300 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
-                  {place}
-                </button>
-              ))}
-            </div>
-
-            {error && (
-
-              <p role="alert" className="mx-auto mt-6 max-w-2xl rounded-xl border border-red-300/30 bg-red-950/50 p-4 text-sm text-red-100">
-
-                {error}
-
+              <h1 className="mx-auto mt-7 max-w-4xl text-4xl font-extrabold leading-[1.12] tracking-[-0.035em] sm:text-5xl lg:text-[58px]">
+                Your next stay, <span className="text-sky-300">made simpler.</span>
+              </h1>
+              <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">
+                Find PGs near your college or workplace. Compare travel times, explore real listings, and shortlist places that suit your routine.
               </p>
-
-            )}
-
-            <div className="mx-auto mt-14 grid max-w-3xl gap-4 sm:grid-cols-3">
-
-              {[
-
-                { icon: "⌖", title: "Real PG Listings", description: "Explore places near your destination" },
-
-                { icon: "↗", title: "Commute Insights", description: "Compare estimated travel times" },
-
-                { icon: "♡", title: "Save Favorites", description: "Keep track of your preferred PGs" },
-
-              ].map((feature) => (
-
-                <div key={feature.title}
-
-                  className="rounded-2xl border border-white/15 bg-white/[0.07] p-5 text-left shadow-sm backdrop-blur-sm transition-transform duration-200 hover:-translate-y-1 hover:bg-white/[0.1]">
-
-                  <span className="text-2xl text-blue-300" aria-hidden="true">{feature.icon}</span>
-
-                  <h3 className="mt-3 font-bold text-white">{feature.title}</h3>
-
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{feature.description}</p>
-
-                </div>
-
-              ))}
-
+              <form id="search" onSubmit={handleSearch} className="mx-auto mt-9 flex max-w-3xl flex-col gap-2 rounded-2xl border border-white/15 bg-white p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center">
+                <label className="flex min-w-0 flex-1 items-center gap-3 px-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 text-blue-600" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                  <span className="sr-only">Destination</span>
+                  <input type="text" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Enter your college, office or landmark" aria-label="College or workplace destination" className="w-full min-w-0 rounded-lg bg-transparent py-3.5 text-sm font-medium text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500" required />
+                </label>
+                <button type="submit" disabled={loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-7 py-3 font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  {loading ? "Searching..." : "Explore PGs"}
+                  {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>}
+                </button>
+              </form>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-label="Popular destinations">
+                <span className="mr-1 text-xs font-medium text-slate-400">Popular searches:</span>
+                {["VIT Vellore", "Anna University", "Tidel Park"].map((place) => (
+                  <button key={place} type="button" onClick={() => setDestination(place)} className="rounded-full border border-white/20 bg-white/[0.07] px-3.5 py-1.5 text-xs font-medium text-slate-200 transition hover:border-sky-300/60 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">{place}</button>
+                ))}
+              </div>
+              {error && <p role="alert" className="mx-auto mt-6 max-w-2xl rounded-xl border border-red-300/30 bg-red-950/50 p-4 text-sm text-red-100">{error}</p>}
             </div>
-
+            <div className="mx-auto mt-14 grid max-w-5xl gap-4 md:grid-cols-3">
+              {[
+                { key: "listing", title: "Discover real listings", description: "Browse PGs near the places that matter to you." },
+                { key: "commute", title: "Plan your commute", description: "Compare estimated driving, walking and cycling times." },
+                { key: "saved", title: "Save your shortlist", description: "Keep your favorite properties in one place." }
+              ].map((feature) => (
+                <article key={feature.key} className="group rounded-2xl border border-white/15 bg-white/[0.065] p-6 text-left transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/30 hover:bg-white/[0.10]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-300/20 bg-sky-300/10 text-sky-200">
+                    {feature.key === "listing" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/></svg> : feature.key === "commute" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h5a5 5 0 0 0 5-5v-5"/></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>}
+                  </div>
+                  <h3 className="mt-5 text-base font-bold tracking-tight text-white">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{feature.description}</p>
+                </article>
+              ))}
+            </div>
           </div>
-
         </section>
 
         <section className="mx-auto max-w-7xl px-6 py-20">
@@ -3583,62 +3338,82 @@ function App() {
 
         <section className="mx-auto max-w-5xl px-6 py-20 text-center"><h2 className="text-3xl font-extrabold text-[#112747]">Ready to find your next place?</h2><p className="mx-auto mt-4 max-w-xl text-slate-600">Start with the destination you visit most. We'll help you explore nearby options.</p><button type="button" onClick={() => document.getElementById("search")?.scrollIntoView({behavior:"smooth"})} className="mt-7 rounded-xl bg-blue-700 px-7 py-3 font-semibold text-white hover:bg-blue-800">Find PGs →</button></section>
 
-        {/* Real platform usage metrics: intentionally below all homepage marketing sections. */}
-        <section className="border-t border-slate-100 bg-slate-50 px-6 py-16 sm:py-20">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-9 text-center">
-              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">PGPilot in numbers</p>
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#112747] sm:text-4xl">Our Growing Community</h2>
-              <p className="mt-3 text-slate-600">Real activity from the PGPilot platform</p>
+        {/* Live platform metrics — all numbers remain connected to existing API state */}
+        <section className="border-t border-slate-200 bg-[#f7f9fc] px-5 py-16 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">PGPilot at a glance</p>
+                <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#102747] sm:text-4xl">A community taking shape.</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">A snapshot of activity on PGPilot, based on available platform data.</p>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Platform overview</span>
             </div>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {[
-                { icon: "👥", label: "Registered Users", value: platformStats?.totalUsers },
-                { icon: "🔎", label: "PG Searches", value: platformStats?.totalSearches },
-                { icon: "💬", label: "User Feedback", value: platformStats?.totalFeedback },
-                { icon: "⭐", label: "Platform Rating", value: platformStats?.averageRating == null ? null : `${platformStats.averageRating}/5` }
+                { key: "users", label: "Registered users", value: platformStats?.totalUsers, description: "People who joined PGPilot" },
+                { key: "search", label: "PG searches", value: platformStats?.totalSearches, description: "Destination searches made" },
+                { key: "feedback", label: "Feedback received", value: platformStats?.totalFeedback, description: "Responses from users" },
+                { key: "rating", label: "Average rating", value: platformStats?.averageRating == null ? null : `${platformStats.averageRating}/5`, description: "From submitted feedback" }
               ].map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-slate-200 bg-white px-4 py-7 text-center shadow-sm transition-shadow hover:shadow-md sm:px-6">
-                  <span className="text-3xl" aria-hidden="true">{stat.icon}</span>
-                  <div className="mt-3 text-3xl font-extrabold text-[#112747]">
-                    {stat.value ?? (platformStats && stat.label === "Platform Rating" ? "Not rated" : "—")}
+                <article key={stat.key} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_18px_rgba(15,23,42,0.035)] transition hover:border-blue-200 hover:shadow-md sm:p-6">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                    {stat.key === "users" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></svg> : stat.key === "search" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-5 w-5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg> : stat.key === "feedback" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M20 16a3 3 0 0 1-3 3H9l-5 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3Z"/><path d="M8 9h8M8 13h5"/></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="m12 2 3.1 6.4 7 .9-5 4.9 1.2 7-6.3-3.3-6.3 3.3 1.2-7-5-4.9 7-.9Z"/></svg>}
                   </div>
-                  <p className="mt-2 text-sm font-medium text-slate-500">{stat.label}</p>
-                </div>
+                  <p className="mt-5 text-3xl font-extrabold tracking-tight text-[#102747] sm:text-4xl">{stat.value ?? (platformStats && stat.key === "rating" ? "Not rated" : "—")}</p>
+                  <h3 className="mt-2 text-sm font-bold text-slate-800">{stat.label}</h3>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-500">{stat.description}</p>
+                </article>
               ))}
             </div>
-            {platformStatsError && <p className="mt-4 text-center text-sm text-slate-500">Statistics are temporarily unavailable.</p>}
+            {platformStatsError && <p className="mt-5 text-sm text-slate-500" role="status">Statistics are temporarily unavailable.</p>}
           </div>
         </section>
 
         </>)}
 
-        {view === "results" && (
-          <section className="relative overflow-hidden bg-[#102746] px-6 py-12 text-white sm:py-16">
-            <div className="pointer-events-none absolute -right-20 -top-32 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
-            <div className="relative mx-auto max-w-7xl">
-              <button type="button" onClick={() => { setView("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="inline-flex items-center gap-2 text-sm font-semibold text-blue-100 transition hover:text-white">← Back to homepage</button>
-              <div className="mt-7 flex flex-wrap items-end justify-between gap-6">
-                <div className="max-w-3xl">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-300">PGPILOT / DISCOVER STAYS</p>
-                  <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">Find a better place near <span className="text-sky-300">{searchedDestination || destination}</span></h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">Compare verified source information, real-world commute estimates and personalized match scores—all in one place.</p>
+        {!showFavorites && view === "results" && (
+          <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-[#102746] via-[#16365e] to-[#194a79] text-white">
+            <div className="pointer-events-none absolute -right-16 -top-36 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" aria-hidden="true" />
+            <div className="relative mx-auto max-w-7xl px-6 py-9 sm:py-11">
+              <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold sm:text-sm">
+                <button type="button" onClick={() => { setView("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/></svg>
+                  Home
+                </button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-slate-400" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                <span aria-current="page" className="text-sky-200">Explore PGs</span>
+              </nav>
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 max-w-3xl">
+                  <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300">Find your next stay</p>
+                  <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">
+                    PGs near <span className="text-sky-300">{searchedDestination || destination}</span>
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200">Explore nearby stays, compare commute times, and discover your best match.</p>
                 </div>
-                <div className="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-sm">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-300">Listings discovered</p>
-                  <p className="mt-1 text-3xl font-extrabold text-white">{pgs.length}</p>
+                <div className="inline-flex w-fit shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm" aria-label={`${pgs.length} listings discovered`}>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-sky-200" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9M14 14h3M14 18h3"/></svg>
+                  </div>
+                  <div><p className="text-2xl font-extrabold leading-none">{pgs.length}</p><p className="mt-1 text-xs font-medium text-slate-200">Listings found</p></div>
                 </div>
               </div>
-              <form onSubmit={handleSearch} className="mt-8 flex max-w-4xl flex-col gap-3 rounded-2xl border border-white/20 bg-white p-2 shadow-2xl shadow-slate-950/20 sm:flex-row">
-                <label className="flex min-w-0 flex-1 items-center gap-3 px-4">
-                  <span className="text-xl" aria-hidden="true">⌕</span>
-                  <span className="sr-only">Change destination</span>
-                  <input aria-label="Change destination" value={destination} onChange={event => setDestination(event.target.value)} required placeholder="Search college, workplace or landmark" className="w-full min-w-0 bg-transparent py-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400" />
+              <form onSubmit={handleSearch} className="mt-7 flex max-w-4xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg shadow-slate-950/15 sm:flex-row sm:items-center">
+                <label className="flex min-w-0 flex-1 items-center gap-3 px-3 sm:px-4">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-5 w-5 shrink-0 text-slate-400" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                  <span className="sr-only">Search destination</span>
+                  <input aria-label="Search destination" value={destination} onChange={event => setDestination(event.target.value)} required placeholder="Enter a college, office or landmark" className="w-full min-w-0 bg-transparent py-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400" />
                 </label>
-                <button disabled={loading} type="submit" className="rounded-xl bg-blue-700 px-8 py-3.5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60">{loading ? "Searching..." : "Search PGs →"}</button>
+                <button disabled={loading} type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-7 py-3.5 text-sm font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 disabled:opacity-60">
+                  {loading ? "Searching..." : "Find PGs"}
+                  {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>}
+                </button>
               </form>
-              <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-slate-300">
-                <span>✓ Google Places listings</span><span>✓ Travel-time comparison</span><span>✓ Personalized Smart Match</span>
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-300">
+                <span className="inline-flex items-center gap-1.5"><span className="text-sky-300">✓</span> Google Places data</span>
+                <span className="inline-flex items-center gap-1.5"><span className="text-sky-300">✓</span> Commute estimates</span>
+                <span className="inline-flex items-center gap-1.5"><span className="text-sky-300">✓</span> Smart Match ranking</span>
               </div>
               {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
             </div>
@@ -3669,7 +3444,7 @@ function App() {
 
 
 
-        {view === "results" && searched && !loading && !error && (
+        {!showFavorites && view === "results" && searched && !loading && !error && (
 
 
 
@@ -3717,215 +3492,143 @@ function App() {
 
 
 
-              {/* Sorting */}
-
-
-
-              {pgs.length > 0 && (
-
-
-
-                <div className="flex items-center gap-3">
-
-
-
-                  <label
-
-
-
-                    htmlFor="sortBy"
-
-
-
-                    className="text-sm font-semibold text-slate-700"
-
-
-
-                  >
-
-
-
-                    Sort by
-
-
-
-                  </label>
-
-
-
-                  <select
-
-
-
-                    id="sortBy"
-
-
-
-                    value={sortBy}
-
-
-
-                    onChange={(event) =>
-
-
-
-                      setSortBy(event.target.value)
-
-
-
-                    }
-
-
-
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
-
-
-
-                  >
-
-
-
-                    <option value="match">Best Match (PGPilot Score)</option>
-                    <option value="commute">
-
-
-
-                      Shortest commute
-
-
-
-                    </option>
-
-
-
-                    <option value="rating">
-
-
-
-                      Highest Google rating
-
-
-
-                    </option>
-
-
-
-                    <option value="distance">
-
-
-
-                      Nearest straight-line distance
-
-
-
-                    </option>
-
-
-
-                  </select>
-
-
-
-                </div>
-
-
-
-              )}
-
-
-
             </div>
 
-
-
-                          {/* Advanced filters and accommodation preferences */}
-              {pgs.length > 0 && (
-                <section aria-label="PG filters and preferences" className="mb-7 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50 sm:p-6">
-                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-lg font-bold text-[#112747]">Filters &amp; PG Preferences</h4>
-                      <p className="mt-1 text-sm text-slate-500">Choose a category to search Google Places again; rating, commute and distance filters apply locally.</p>
-                    </div>
-                    <button type="button" onClick={() => {
-                      if (pgPreference !== "all") { setPgPreference("all"); handleSearch({ preventDefault() {} }, "all"); }
-                      setMinRating("any");
-                      setMaxCommute("any"); setMaxDistance("any");
-                      setMatchPriority("balanced"); setSortBy("commute");
-                    }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">
-                      Clear Filters
-                    </button>
+            {/* Compact, accessible preference panel: draft choices are applied together. */}
+            {pgs.length > 0 && (
+              <section aria-label="PG filters and preferences" className="mb-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-[#112747]">Find your ideal PG</h2>
+                    <p className="mt-1 text-sm leading-6 text-slate-500">Choose your preferences, then apply them to find your best matches.</p>
                   </div>
-                  <fieldset>
-                    <legend className="mb-3 text-sm font-bold text-slate-800">Accommodation preference</legend>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        ["all", "All PGs"], ["coliving", "Co-living"],
-                        ["men", "Men's PG"], ["women", "Women's PG"]
-                      ].map(([value, label]) => (
-                        <button key={value} type="button" aria-pressed={pgPreference === value}
-                          onClick={() => { if (value !== pgPreference) { setPgPreference(value); handleSearch({ preventDefault() {} }, value); } }}
-                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${pgPreference === value
-                            ? "border-blue-700 bg-blue-700 text-white"
-                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-400"}`}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">Category searches use Google Places keywords. Results are not verified by the property; confirm eligibility before booking.</p>
-                  </fieldset>
-                   <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
-                     <label htmlFor="matchPriority" className="block text-sm font-bold text-[#112747]">
-                       Smart Match preference
-                     </label>
-                     <p className="mt-1 text-xs text-slate-600">Choose what matters most. This changes PGPilot Score weights and sorts by Best Match.</p>
-                     <select
-                       id="matchPriority"
-                       value={matchPriority}
-                       onChange={(event) => {
-                         setMatchPriority(event.target.value);
-                         setSortBy("match");
-                       }}
-                       className="mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-semibold sm:max-w-sm"
-                     >
-                       <option value="balanced">Balanced — Commute 45%, Distance 20%, Rating 35%</option>
-                       <option value="commute">Commute First — Commute 70%</option>
-                       <option value="rating">Rating First — Rating 70%</option>
-                       <option value="nearest">Nearest First — Distance 65%</option>
-                     </select>
-                     <p className="mt-2 text-xs text-slate-500">Scores are estimates from available commute, location and Google rating data; unrated listings use a neutral rating.</p>
-                   </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <label className="text-sm font-semibold text-slate-700">Minimum Google rating
-                      <select value={minRating} onChange={(event) => setMinRating(event.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
-                        <option value="any">Any rating</option>
-                        <option value="3">3+ stars</option><option value="4">4+ stars</option>
-                        <option value="4.5">4.5+ stars</option>
-                      </select>
-                    </label>
-                    <label className="text-sm font-semibold text-slate-700">Maximum commute
-                      <select value={maxCommute} onChange={(event) => setMaxCommute(event.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
-                        <option value="any">Any commute</option>
-                        <option value="10">10 minutes</option><option value="20">20 minutes</option>
-                        <option value="30">30 minutes</option><option value="45">45 minutes</option>
-                      </select>
-                    </label>
-                    <label className="text-sm font-semibold text-slate-700">Maximum distance
-                      <select value={maxDistance} onChange={(event) => setMaxDistance(event.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
-                        <option value="any">Any distance</option>
-                        <option value="1">Within 1 km</option><option value="2">Within 2 km</option>
-                        <option value="3">Within 3 km</option><option value="5">Within 5 km</option>
-                      </select>
-                    </label>
+                  <button type="button" disabled={loading} onClick={() => {
+                    const defaults = { preference: "all", rating: "any", commute: "any", distance: "any", priority: "balanced" };
+                    setFilterDraft(defaults);
+                    setCustomCommute(""); setCustomDistance("");
+                    setPgPreference("all");
+                    setMinRating("any"); setMaxCommute("any"); setMaxDistance("any");
+                    setMatchPriority("balanced"); setSortBy("commute");
+                    setFilterNotice("All filters have been cleared.");
+                    if (pgPreference !== "all") {
+                      handleSearch({ preventDefault() {} }, "all");
+                    }
+                  }} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 disabled:opacity-50">
+                    Reset filters
+                  </button>
+                </div>
+
+                <fieldset className="mt-5">
+                  <legend className="text-sm font-semibold text-[#112747]">Accommodation type</legend>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[["all", "All PGs"], ["coliving", "Co-living"], ["men", "Men's PG"], ["women", "Women's PG"]].map(([value, label]) => (
+                      <button key={value} type="button" aria-pressed={filterDraft.preference === value}
+                        onClick={() => { setFilterDraft((previous) => ({ ...previous, preference: value })); setFilterNotice(""); }}
+                        className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${filterDraft.preference === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}>
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                  <p role="status" className="mt-5 text-sm font-semibold text-blue-800">
-                    Showing {filteredPGs.length} of {pgs.length} PGs · Sorted by {sortBy === "match" ? "Smart Match" : sortBy === "commute" ? "commute" : sortBy === "rating" ? "rating" : "distance"}
-                    {maxCommute !== "any" && matrixLoading ? " · Calculating commute times…" : ""}
-                  </p>
-                </section>
-              )}
+                  <p className="mt-2 text-xs leading-5 text-slate-500">Categories use Google Places search keywords. Confirm eligibility with the property.</p>
+                </fieldset>
+
+                <fieldset className="mt-6">
+                  <legend className="text-sm font-semibold text-[#112747]">What matters most to you?</legend>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {[
+                      { value: "balanced", title: "Best overall", description: "Balance commute, distance and ratings" },
+                      { value: "commute", title: "Fastest commute", description: "Prioritize shorter travel times" },
+                      { value: "rating", title: "Top rated", description: "Prioritize Google ratings" },
+                      { value: "nearest", title: "Nearest", description: "Prioritize proximity to destination" },
+                    ].map((option) => (
+                      <button key={option.value} type="button" aria-pressed={filterDraft.priority === option.value}
+                        onClick={() => { setFilterDraft((previous) => ({ ...previous, priority: option.value })); setFilterNotice(""); }}
+                        className={`min-h-24 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${filterDraft.priority === option.value ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600" : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"}`}>
+                        <span className="flex items-center justify-between gap-2 text-sm font-bold text-[#112747]">
+                          {option.title}<span aria-hidden="true" className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${filterDraft.priority === option.value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-300"}`}>{filterDraft.priority === option.value ? "✓" : ""}</span>
+                        </span>
+                        <span className="mt-2 block text-xs leading-5 text-slate-500">{option.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">Smart Match uses estimated commute, straight-line distance and Google ratings. Unrated listings receive a neutral rating.</p>
+                </fieldset>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-3">
+                  {[
+                    { label: "Minimum Google rating", key: "rating", options: [["any", "Any rating"], ...[2, 2.5, 3, 3.5, 4, 4.5, 5].map((v) => [String(v), `${v.toFixed(1)}+ stars`])] },
+                    { label: "Maximum commute", key: "commute", options: [["any", "Any commute"], ...[5, 10, 15, 20, 30, 45, 60, 90, 120].map((v) => [String(v), `Within ${v} minutes`]), ["custom", "Custom time…"]] },
+                    { label: "Maximum straight-line distance", key: "distance", options: [["any", "Any distance"], ...[0.5, 1, 2, 3, 5, 7, 10, 15, 20, 25].map((v) => [String(v), `Within ${v} km`]), ["custom", "Custom distance…"]] },
+                  ].map((field) => (
+                    <div key={field.key} className="min-w-0">
+                      <label htmlFor={`pgpilot-filter-${field.key}`} className="block text-sm font-semibold text-[#112747]">{field.label}</label>
+                      <select id={`pgpilot-filter-${field.key}`} value={filterDraft[field.key]}
+                        onChange={(event) => { const value = event.target.value; setFilterDraft((previous) => ({ ...previous, [field.key]: value })); setFilterNotice(""); }}
+                        className="mt-2 block min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+                        {field.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                      {field.key === "commute" && filterDraft.commute === "custom" && (
+                        <div className="mt-2">
+                          <label htmlFor="pgpilot-custom-commute" className="block text-xs font-medium text-slate-600">Maximum time (minutes)</label>
+                          <input id="pgpilot-custom-commute" type="number" min="1" max="1440" step="1" inputMode="numeric" placeholder="e.g. 75"
+                            value={customCommute} onChange={(event) => { setCustomCommute(event.target.value); setFilterNotice(""); }}
+                            className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                      )}
+                      {field.key === "distance" && filterDraft.distance === "custom" && (
+                        <div className="mt-2">
+                          <label htmlFor="pgpilot-custom-distance" className="block text-xs font-medium text-slate-600">Maximum distance (km)</label>
+                          <input id="pgpilot-custom-distance" type="number" min="0.1" max="100" step="0.1" inputMode="decimal" placeholder="e.g. 12.5"
+                            value={customDistance} onChange={(event) => { setCustomDistance(event.target.value); setFilterNotice(""); }}
+                            className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-500">Distance is measured in a straight line. Commute uses your selected travel mode. Filters apply to the PG listings currently retrieved from Google Places.</p>
+
+                <div className="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div aria-live="polite" className="min-w-0">
+                    <p className="text-sm font-semibold text-[#112747]">{filteredPGs.length} of {pgs.length} PGs match your applied filters</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {minRating !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Rating {minRating}+</span>}
+                      {maxCommute !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Commute ≤ {maxCommute} min</span>}
+                      {maxDistance !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Distance ≤ {maxDistance} km</span>}
+                      {pgPreference !== "all" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">{pgPreference === "men" ? "Men's PG" : pgPreference === "women" ? "Women's PG" : "Co-living"}</span>}
+                    </div>
+                    {filterNotice && <p className="mt-2 text-xs text-slate-500">{filterNotice}</p>}
+                    {maxCommute !== "any" && matrixLoading && <p className="mt-1 text-xs text-slate-500">Calculating commute times…</p>}
+                  </div>
+                  <button type="button" disabled={loading} onClick={() => {
+                    const commuteValue = filterDraft.commute === "custom" ? customCommute.trim() : filterDraft.commute;
+                    const distanceValue = filterDraft.distance === "custom" ? customDistance.trim() : filterDraft.distance;
+                    if (filterDraft.commute === "custom" && (commuteValue === "" || !Number.isFinite(Number(commuteValue)) || Number(commuteValue) < 1 || Number(commuteValue) > 1440 || !Number.isInteger(Number(commuteValue)))) {
+                      setFilterNotice("Enter a valid custom commute between 1 and 1440 whole minutes.");
+                      return;
+                    }
+                    if (filterDraft.distance === "custom" && (distanceValue === "" || !Number.isFinite(Number(distanceValue)) || Number(distanceValue) < 0.1 || Number(distanceValue) > 100)) {
+                      setFilterNotice("Enter a valid custom distance between 0.1 and 100 km.");
+                      return;
+                    }
+                    setPgPreference(filterDraft.preference);
+                    setMinRating(filterDraft.rating);
+                    setMaxCommute(commuteValue);
+                    setMaxDistance(distanceValue);
+                    setMatchPriority(filterDraft.priority);
+                    setSortBy("match");
+                    setFilterNotice("Preferences applied. See matching PGs below.");
+                    if (filterDraft.preference !== pgPreference) {
+                      handleSearch({ preventDefault() {} }, filterDraft.preference);
+                    } else {
+                      document.getElementById("pgpilot-results-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 disabled:opacity-50">
+                    {loading ? "Applying…" : "Apply filters & show PGs →"}
+                  </button>
+                </div>
+              </section>
+            )}
 
 {/* Travel mode selector */}
 
@@ -4023,7 +3726,7 @@ function App() {
 
 
 
-                          className={`rounded-xl border px-3 py-4 text-sm font-bold transition ${
+                          className={`relative flex min-h-[106px] flex-col items-center justify-center rounded-xl border px-3 py-4 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
 
 
 
@@ -4047,15 +3750,12 @@ function App() {
 
 
 
-                          <span className="mb-2 block text-2xl">
-
-
-
-                            {details.icon}
-
-
-
-                          </span>
+                          <TravelModeIcon mode={mode} className="mb-2 h-6 w-6" />
+                          {selected && (
+                            <span className="absolute right-3 top-3" aria-label="Selected">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4" aria-hidden="true"><path d="m5 12 4 4L19 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            </span>
+                          )}
 
 
 
@@ -4176,25 +3876,13 @@ function App() {
 
 
             {!matrixLoading && rankedCount > 0 && (
-
-
-
-              <p className="mb-6 text-sm font-medium text-blue-700">
-
-
-
-                ✓ Estimated {currentMode.label.toLowerCase()} commutes
-
-
-
-                calculated for {rankedCount} of {pgs.length} PGs.
-
-
-
-              </p>
-
-
-
+              <div role="status" className="mb-6 flex items-start gap-2 text-sm">
+                <svg className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <div>
+                  <p className="font-semibold text-slate-800">{currentMode.label} commute estimates {rankedCount === pgs.length ? "ready" : "partially ready"}</p>
+                  <p className="mt-0.5 text-slate-500">Travel times calculated for {rankedCount} of {pgs.length} PGs.</p>
+                </div>
+              </div>
             )}
 
 
@@ -4219,7 +3907,7 @@ function App() {
 
 
 
-              <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div id="pgpilot-results-list" className="grid scroll-mt-24 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
 
 
 
@@ -4954,7 +4642,7 @@ function App() {
 
 
 
-        {view === "results" && searched && !loading && !error && pgs.length > 0 && (
+        {!showFavorites && view === "results" && searched && !loading && !error && pgs.length > 0 && (
 
 
 
