@@ -3777,7 +3777,7 @@ function App() {
 
 
 
-                    className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 sm:w-auto"
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
 
 
 
@@ -3840,23 +3840,23 @@ function App() {
 
                           {/* Advanced filters and accommodation preferences */}
               {pgs.length > 0 && (
-                <section aria-label="PG filters and preferences" className="mb-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-                  <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                <section aria-label="PG filters and preferences" className="mb-7 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50 sm:p-6">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-xl font-bold tracking-tight text-[#112747]">Filters &amp; PG Preferences</h4>
-                      <p className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-500">Choose a category to search Google Places again; rating, commute and distance filters apply locally.</p>
+                      <h4 className="text-lg font-bold text-[#112747]">Filters &amp; PG Preferences</h4>
+                      <p className="mt-1 text-sm text-slate-500">Choose a category to search Google Places again; rating, commute and distance filters apply locally.</p>
                     </div>
                     <button type="button" onClick={() => {
                       if (pgPreference !== "all") { setPgPreference("all"); handleSearch({ preventDefault() {} }, "all"); }
                       setMinRating("any");
                       setMaxCommute("any"); setMaxDistance("any");
                       setMatchPriority("balanced"); setSortBy("commute");
-                    }} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                    }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">
                       Clear Filters
                     </button>
                   </div>
                   <fieldset>
-                    <legend className="mb-3 text-sm font-semibold text-slate-800">Accommodation preference</legend>
+                    <legend className="mb-3 text-sm font-bold text-slate-800">Accommodation preference</legend>
                     <div className="flex flex-wrap gap-2">
                       {[
                         ["all", "All PGs"], ["coliving", "Co-living"],
@@ -3864,20 +3864,20 @@ function App() {
                       ].map(([value, label]) => (
                         <button key={value} type="button" aria-pressed={pgPreference === value}
                           onClick={() => { if (value !== pgPreference) { setPgPreference(value); handleSearch({ preventDefault() {} }, value); } }}
-                          className={`min-h-10 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${pgPreference === value
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${pgPreference === value
                             ? "border-blue-700 bg-blue-700 text-white"
                             : "border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-400"}`}>
                           {label}
                         </button>
                       ))}
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">Category searches use Google Places keywords. Results are not verified by the property; confirm eligibility before booking.</p>
+                    <p className="mt-2 text-xs text-slate-500">Category searches use Google Places keywords. Results are not verified by the property; confirm eligibility before booking.</p>
                   </fieldset>
-                   <div className="mt-6 rounded-2xl border border-blue-100 bg-[#f4f8ff] p-4 sm:p-5">
-                     <label htmlFor="matchPriority" className="block text-base font-bold text-[#112747]">
+                   <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                     <label htmlFor="matchPriority" className="block text-sm font-bold text-[#112747]">
                        Smart Match preference
                      </label>
-                     <p className="mt-1 text-sm leading-5 text-slate-600">Choose what matters most. This changes PGPilot Score weights and sorts by Best Match.</p>
+                     <p className="mt-1 text-xs text-slate-600">Choose what matters most. This changes PGPilot Score weights and sorts by Best Match.</p>
                      <select
                        id="matchPriority"
                        value={matchPriority}
@@ -3885,42 +3885,42 @@ function App() {
                          setMatchPriority(event.target.value);
                          setSortBy("match");
                        }}
-                       className="mt-3 w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 sm:max-w-lg"
+                       className="mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-semibold sm:max-w-sm"
                      >
                        <option value="balanced">Balanced — Commute 45%, Distance 20%, Rating 35%</option>
                        <option value="commute">Commute First — Commute 70%</option>
                        <option value="rating">Rating First — Rating 70%</option>
                        <option value="nearest">Nearest First — Distance 65%</option>
                      </select>
-                     <p className="mt-2 text-xs leading-5 text-slate-500">Scores are estimates from available commute, location and Google rating data; unrated listings use a neutral rating.</p>
+                     <p className="mt-2 text-xs text-slate-500">Scores are estimates from available commute, location and Google rating data; unrated listings use a neutral rating.</p>
                    </div>
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <label className="block text-sm font-semibold text-slate-800">Minimum Google rating
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <label className="text-sm font-semibold text-slate-700">Minimum Google rating
                       <select value={minRating} onChange={(event) => setMinRating(event.target.value)}
-                        className="mt-2 block w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
                         <option value="any">Any rating</option>
                         <option value="3">3+ stars</option><option value="4">4+ stars</option>
                         <option value="4.5">4.5+ stars</option>
                       </select>
                     </label>
-                    <label className="block text-sm font-semibold text-slate-800">Maximum commute
+                    <label className="text-sm font-semibold text-slate-700">Maximum commute
                       <select value={maxCommute} onChange={(event) => setMaxCommute(event.target.value)}
-                        className="mt-2 block w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
                         <option value="any">Any commute</option>
                         <option value="10">10 minutes</option><option value="20">20 minutes</option>
                         <option value="30">30 minutes</option><option value="45">45 minutes</option>
                       </select>
                     </label>
-                    <label className="block text-sm font-semibold text-slate-800">Maximum distance
+                    <label className="text-sm font-semibold text-slate-700">Maximum distance
                       <select value={maxDistance} onChange={(event) => setMaxDistance(event.target.value)}
-                        className="mt-2 block w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm">
                         <option value="any">Any distance</option>
                         <option value="1">Within 1 km</option><option value="2">Within 2 km</option>
                         <option value="3">Within 3 km</option><option value="5">Within 5 km</option>
                       </select>
                     </label>
                   </div>
-                  <p role="status" className="mt-6 border-t border-slate-100 pt-4 text-sm font-semibold text-blue-700">
+                  <p role="status" className="mt-5 text-sm font-semibold text-blue-800">
                     Showing {filteredPGs.length} of {pgs.length} PGs · Sorted by {sortBy === "match" ? "Smart Match" : sortBy === "commute" ? "commute" : sortBy === "rating" ? "rating" : "distance"}
                     {maxCommute !== "any" && matrixLoading ? " · Calculating commute times…" : ""}
                   </p>
