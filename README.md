@@ -75,6 +75,8 @@ The statistics section presents platform activity. Counts and averages are loade
 ### 3. Search results header
 
 ![PGPilot results search](Screenshots/results-search.png)
+![PGPilot results search](Screenshots/results-search1.png)
+
 
 After searching, users can review their destination and the number of discovered listings before examining the results, travel estimates, and filters.
 
