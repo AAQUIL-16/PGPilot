@@ -100,7 +100,7 @@ The following features are implemented in the application but are **not illustra
 
 ## 🏗️ System Architecture
 
-![PGPilot System Architecture](Screenshots/Architecture.png)
+![PGPilot System Architecture](Screenshots/Architecture (3).png)
 
 ### Component responsibilities
 
