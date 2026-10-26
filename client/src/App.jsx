@@ -321,6 +321,7 @@ function App() {
   const [view, setView] = useState("home");
 
   const [detailPG, setDetailPG] = useState(null);
+  const [mapExpanded, setMapExpanded] = useState(false);
 
 
 
@@ -428,6 +429,38 @@ function App() {
 
 
   const [showProfile, setShowProfile] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [themePreference, setThemePreference] = useState(() => {
+    try { return localStorage.getItem("pgpilot:theme") || "light"; } catch { return "light"; }
+  });
+  const [systemDark, setSystemDark] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches
+  );
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    try { return localStorage.getItem("pgpilot:reduced-motion") === "true"; } catch { return false; }
+  });
+  const isDark = themePreference === "dark" || (themePreference === "system" && systemDark);
+
+  useEffect(() => {
+    const media = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!media) return;
+    const onChange = (event) => setSystemDark(event.matches);
+    media.addEventListener?.("change", onChange);
+    return () => media.removeEventListener?.("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("pgpilot:theme", themePreference); } catch { /* storage disabled */ }
+    document.documentElement.dataset.pgpilotTheme = isDark ? "dark" : "light";
+    document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+    return () => { delete document.documentElement.dataset.pgpilotTheme; document.documentElement.style.colorScheme = ""; };
+  }, [themePreference, isDark]);
+
+  useEffect(() => {
+    try { localStorage.setItem("pgpilot:reduced-motion", String(reducedMotion)); } catch { /* storage disabled */ }
+    document.documentElement.dataset.pgpilotReducedMotion = reducedMotion ? "true" : "false";
+    return () => { delete document.documentElement.dataset.pgpilotReducedMotion; };
+  }, [reducedMotion]);
 
 
 
@@ -1058,6 +1091,7 @@ function App() {
 
 
     setShowProfile(false);
+    setShowAccountSettings(false);
 
 
 
@@ -1356,6 +1390,21 @@ function App() {
   }, []);
 
 
+
+  const searchInputRef = useRef(null);
+  const [searchSpotlight, setSearchSpotlight] = useState(false);
+  const searchSpotlightTimer = useRef(null);
+  function focusHomepageSearch() {
+    setView("home");
+    setShowFavorites(false);
+    window.setTimeout(() => {
+      document.getElementById("search")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      searchInputRef.current?.focus({ preventScroll: true });
+      setSearchSpotlight(true);
+      window.clearTimeout(searchSpotlightTimer.current);
+      searchSpotlightTimer.current = window.setTimeout(() => setSearchSpotlight(false), 1800);
+    }, 80);
+  }
 
   async function handleSearch(event, preferenceOverride, destinationOverride) {
 
@@ -2764,6 +2813,84 @@ function App() {
 
 
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      <style>{String.raw`
+        /* Cohesive slate/navy palette. Preserve branded blue surfaces and light search bar. */
+        html[data-pgpilot-theme="dark"] { background: #091523; }
+        html[data-pgpilot-theme="dark"] body { background: #091523; color: #e7eef8; }
+        html[data-pgpilot-theme="dark"] .bg-white,
+        html[data-pgpilot-theme="dark"] .bg-white\/95 { background-color: #142438 !important; }
+        html[data-pgpilot-theme="dark"] .bg-slate-50,
+        html[data-pgpilot-theme="dark"] .bg-slate-100,
+        html[data-pgpilot-theme="dark"] .bg-\[\#f1f6fd\] { background-color: #0e1c2d !important; }
+        html[data-pgpilot-theme="dark"] .bg-blue-50,
+        html[data-pgpilot-theme="dark"] .bg-sky-50 { background-color: #172d47 !important; }
+        html[data-pgpilot-theme="dark"] .text-slate-900,
+        html[data-pgpilot-theme="dark"] .text-slate-800,
+        html[data-pgpilot-theme="dark"] .text-slate-700,
+        html[data-pgpilot-theme="dark"] .text-\[\#112747\],
+        html[data-pgpilot-theme="dark"] .text-\[\#102746\] { color: #f1f6ff !important; }
+        html[data-pgpilot-theme="dark"] .text-slate-600,
+        html[data-pgpilot-theme="dark"] .text-slate-500 { color: #b3c3d7 !important; }
+        html[data-pgpilot-theme="dark"] .text-blue-700 { color: #91c3ff !important; }
+        html[data-pgpilot-theme="dark"] .border-slate-200,
+        html[data-pgpilot-theme="dark"] .border-slate-100 { border-color: #334761 !important; }
+        html[data-pgpilot-theme="dark"] input,
+        html[data-pgpilot-theme="dark"] select,
+        html[data-pgpilot-theme="dark"] textarea { background-color: #1b3049; color: #f1f6ff; border-color: #4b607b; }
+        html[data-pgpilot-theme="dark"] input::placeholder { color: #aabbd0; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search,
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search.bg-white { background: #ffffff !important; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search input { background: transparent !important; color: #14253b !important; border-color: transparent !important; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search input::placeholder { color: #64748b !important; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search button[type="submit"] { color: #ffffff !important; }
+        /* Dark-mode coverage for all screens, including cards, menus and dialogs. */
+        html[data-pgpilot-theme="dark"] #root > div { background-color: #091523; color: #e7eef8; }
+        html[data-pgpilot-theme="dark"] .bg-white\/90,
+        html[data-pgpilot-theme="dark"] .bg-white\/80,
+        html[data-pgpilot-theme="dark"] .bg-white\/70,
+        html[data-pgpilot-theme="dark"] .bg-white\/60 { background-color: #142438 !important; }
+        html[data-pgpilot-theme="dark"] .bg-slate-50\/90,
+        html[data-pgpilot-theme="dark"] .bg-slate-50\/80,
+        html[data-pgpilot-theme="dark"] .bg-slate-100\/80,
+        html[data-pgpilot-theme="dark"] .bg-gray-50,
+        html[data-pgpilot-theme="dark"] .bg-gray-100 { background-color: #102136 !important; }
+        html[data-pgpilot-theme="dark"] .bg-blue-100,
+        html[data-pgpilot-theme="dark"] .bg-indigo-50,
+        html[data-pgpilot-theme="dark"] .bg-teal-50,
+        html[data-pgpilot-theme="dark"] .bg-emerald-50 { background-color: #18344b !important; }
+        html[data-pgpilot-theme="dark"] .text-slate-950,
+        html[data-pgpilot-theme="dark"] .text-slate-400,
+        html[data-pgpilot-theme="dark"] .text-gray-900,
+        html[data-pgpilot-theme="dark"] .text-gray-800,
+        html[data-pgpilot-theme="dark"] .text-gray-700,
+        html[data-pgpilot-theme="dark"] .text-gray-600,
+        html[data-pgpilot-theme="dark"] .text-gray-500 { color: #d5e2f2 !important; }
+        html[data-pgpilot-theme="dark"] .text-blue-800,
+        html[data-pgpilot-theme="dark"] .text-blue-900,
+        html[data-pgpilot-theme="dark"] .text-teal-700,
+        html[data-pgpilot-theme="dark"] .text-teal-800,
+        html[data-pgpilot-theme="dark"] .text-emerald-700 { color: #9acbff !important; }
+        html[data-pgpilot-theme="dark"] .border-slate-300,
+        html[data-pgpilot-theme="dark"] .border-gray-200,
+        html[data-pgpilot-theme="dark"] .border-blue-100,
+        html[data-pgpilot-theme="dark"] .border-blue-200 { border-color: #3a506b !important; }
+        html[data-pgpilot-theme="dark"] input:focus,
+        html[data-pgpilot-theme="dark"] textarea:focus,
+        html[data-pgpilot-theme="dark"] select:focus { color: #f1f6ff; }
+        /* Keep branded buttons and navy hero panels legible. */
+        html[data-pgpilot-theme="dark"] button.bg-blue-700,
+        html[data-pgpilot-theme="dark"] button.bg-blue-800,
+        html[data-pgpilot-theme="dark"] a.bg-blue-700 { color: #ffffff !important; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search,
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search:focus-within { background-color: #fff !important; border-color: rgba(255,255,255,.35) !important; box-shadow: 0 18px 48px rgba(0,0,0,.22) !important; }
+        html[data-pgpilot-theme="dark"] .pgpilot-hero-search input:focus { color: #14253b !important; box-shadow: none !important; outline: none !important; }
+        .pgpilot-hero-search:focus-within { box-shadow: 0 18px 48px rgba(0,0,0,.22) !important; }
+        .pgpilot-hero-search input:focus { outline: none !important; box-shadow: none !important; }
+        html[data-pgpilot-reduced-motion="true"] *,
+        html[data-pgpilot-reduced-motion="true"] *::before,
+        html[data-pgpilot-reduced-motion="true"] *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+      `}</style>
+
 
 
 
@@ -2877,7 +3004,7 @@ function App() {
                         <div className="mx-2 my-2 border-t border-slate-100" />
                         <p className="px-2.5 pb-1 pt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Preferences & support</p>
                         {[
-                          { icon: "settings", title: "Account Settings", action: () => setShowProfile(true) },
+                          { icon: "settings", title: "Account Settings", action: () => setShowAccountSettings(true) },
                           { icon: "feedback", title: "Give Feedback", action: () => { setFeedbackError(""); setFeedbackSuccess(false); setShowFeedback(true); } },
                           { icon: "help", title: "Help & Support", action: () => setShowHelpSupport(true) },
                         ].map((item) => (
@@ -3096,6 +3223,65 @@ function App() {
         </div>
       )}
 
+      {showAccountSettings && token && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/65 p-4"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) setShowAccountSettings(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="pgpilot-settings-title"
+            className="w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+            <div className="bg-gradient-to-r from-[#102747] to-[#1d4c92] px-6 py-6 text-white sm:px-8">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-200">Personalize your experience</p>
+                  <h2 id="pgpilot-settings-title" className="mt-1 text-2xl font-extrabold">Account Settings</h2>
+                  <p className="mt-1 text-sm text-blue-100">Customize how PGPilot looks and feels.</p>
+                </div>
+                <button type="button" aria-label="Close account settings" onClick={() => setShowAccountSettings(false)}
+                  className="rounded-xl border border-white/25 px-3 py-1.5 text-xl text-white hover:bg-white/10">×</button>
+              </div>
+            </div>
+            <div className="space-y-6 p-6 sm:p-8">
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-base font-extrabold text-slate-900">Appearance</h3>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{isDark ? "Dark mode" : "Light mode"}</span>
+                </div>
+                <p className="mt-1 text-sm text-slate-500">Choose your preferred theme. Your choice is saved on this device.</p>
+                <div className="mt-4 grid grid-cols-3 gap-3" role="group" aria-label="Color theme">
+                  {[
+                    { id: "light", icon: "☀", title: "Light" },
+                    { id: "dark", icon: "☾", title: "Dark" },
+                    { id: "system", icon: "◐", title: "System" },
+                  ].map((option) => (
+                    <button key={option.id} type="button" aria-pressed={themePreference === option.id}
+                      onClick={() => setThemePreference(option.id)}
+                      className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${themePreference === option.id ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-600 hover:border-blue-300"}`}>
+                      <span className="text-2xl" aria-hidden="true">{option.icon}</span>{option.title}
+                      <span className="text-[11px]">{themePreference === option.id ? "✓ Selected" : "Select"}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
+                <div>
+                  <h3 className="font-bold text-slate-900">Reduce animations</h3>
+                  <p className="mt-1 text-xs text-slate-500">Minimize scrolling and transition effects.</p>
+                </div>
+                <button type="button" role="switch" aria-checked={reducedMotion} aria-label="Reduce animations"
+                  onClick={() => setReducedMotion((value) => !value)}
+                  className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${reducedMotion ? "bg-blue-600" : "bg-slate-300"}`}>
+                  <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${reducedMotion ? "left-6" : "left-1"}`} />
+                </button>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                <span className="font-bold text-slate-900">Profile details are separate.</span> To view or edit your personal information, use <span className="font-semibold">My Profile</span> in the account menu.
+              </div>
+              <button type="button" onClick={() => setShowAccountSettings(false)}
+                className="w-full rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Done</button>
+            </div>
+          </section>
+        </div>
+      )}
+
       {showProfile && token && (
 
 
@@ -3263,15 +3449,15 @@ function App() {
               <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">
                 Find PGs near your college or workplace. Compare travel times, explore real listings, and shortlist places that suit your routine.
               </p>
-              <form id="search" onSubmit={handleSearch} className="mx-auto mt-9 flex max-w-3xl flex-col gap-2 rounded-2xl border border-white/15 bg-white p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center">
+              <form id="search" onSubmit={handleSearch} className={`pgpilot-hero-search mx-auto mt-9 flex max-w-3xl scroll-mt-28 flex-col gap-2 rounded-2xl border bg-white p-2.5 transition-all duration-300 focus-within:ring-0 sm:flex-row sm:items-center ${searchSpotlight ? "border-white/40 shadow-[0_18px_48px_rgba(0,0,0,0.22)]" : "border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.2)]"}`}>
                 <label className="flex min-w-0 flex-1 items-center gap-3 px-3">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 text-blue-600" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
                   <span className="sr-only">Destination</span>
-                  <input type="text" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Enter your college, office or landmark" aria-label="College or workplace destination" className="w-full min-w-0 rounded-lg bg-transparent py-3.5 text-sm font-medium text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500" required />
+                  <input ref={searchInputRef} type="text" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Enter your college, office or landmark" aria-label="College or workplace destination" className="w-full min-w-0 rounded-lg bg-transparent py-3.5 text-sm font-medium text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400 focus-visible:ring-0" required />
                 </label>
                 <button type="submit" disabled={loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-7 py-3 font-bold text-white transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
-                  {loading ? "Searching..." : "Explore PGs"}
-                  {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>}
+                  {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>}
+                  {loading ? "Searching..." : "Search PGs"}
                 </button>
               </form>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-label="Popular destinations">
@@ -3332,7 +3518,7 @@ function App() {
 
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 lg:grid-cols-2">
 
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Built around your commute</p><h2 className="mt-3 text-3xl font-extrabold text-[#112747] sm:text-4xl">A cheaper room isn't always a better deal.</h2><p className="mt-5 leading-8 text-slate-600">Long daily journeys can cost you time and money. PGPilot puts estimated commute time alongside listing details, so you can make a more informed choice.</p><button type="button" onClick={() => { if (!token) setAuthMode("register"); else document.getElementById("search")?.scrollIntoView({behavior:"smooth"}); }} className="mt-7 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800">{token ? "Start exploring" : "Create your free account"} →</button></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Built around your commute</p><h2 className="mt-3 text-3xl font-extrabold text-[#112747] sm:text-4xl">A cheaper room isn't always a better deal.</h2><p className="mt-5 leading-8 text-slate-600">Long daily journeys can cost you time and money. PGPilot puts estimated commute time alongside listing details, so you can make a more informed choice.</p><button type="button" onClick={focusHomepageSearch} className="mt-7 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"><svg viewBox="0 0 24 24" className="inline h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg> Explore PGs</button></div>
 
             <div className="rounded-3xl bg-[#112747] p-7 text-white shadow-xl sm:p-10"><p className="text-sm font-semibold text-blue-200">YOUR PG SEARCH, SIMPLIFIED</p><div className="mt-7 space-y-4">{["Find accommodation near your destination","Check estimated travel times","Compare listings side by side","Save your personal shortlist"].map((item,index) => <div key={item} className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/10 p-4"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500 font-bold">{index+1}</span><span className="font-medium">{item}</span></div>)}</div><p className="mt-6 text-xs text-slate-300">Listing availability and commute estimates depend on external data providers.</p></div>
 
@@ -3340,7 +3526,7 @@ function App() {
 
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 py-20 text-center"><h2 className="text-3xl font-extrabold text-[#112747]">Ready to find your next place?</h2><p className="mx-auto mt-4 max-w-xl text-slate-600">Start with the destination you visit most. We'll help you explore nearby options.</p><button type="button" onClick={() => document.getElementById("search")?.scrollIntoView({behavior:"smooth"})} className="mt-7 rounded-xl bg-blue-700 px-7 py-3 font-semibold text-white hover:bg-blue-800">Find PGs →</button></section>
+        <section className="mx-auto max-w-5xl px-6 py-20 text-center"><h2 className="text-3xl font-extrabold text-[#112747]">Ready to find your next place?</h2><p className="mx-auto mt-4 max-w-xl text-slate-600">Start with the destination you visit most. We'll help you explore nearby options.</p><button type="button" onClick={focusHomepageSearch} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-7 py-3 font-semibold text-white hover:bg-blue-800"><svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Find PGs</button></section>
 
         {/* Live platform metrics — all numbers remain connected to existing API state */}
         <section className="border-t border-slate-200 bg-[#f7f9fc] px-5 py-16 sm:px-8 sm:py-20">
@@ -3396,11 +3582,11 @@ function App() {
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200">Explore nearby stays, compare commute times, and discover your best match.</p>
                 </div>
-                <div className="inline-flex w-fit shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm" aria-label={`${pgs.length} listings discovered`}>
+                <div className="inline-flex w-fit shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm" role="status" aria-live="polite">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-sky-200" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9M14 14h3M14 18h3"/></svg>
                   </div>
-                  <div><p className="text-2xl font-extrabold leading-none">{pgs.length}</p><p className="mt-1 text-xs font-medium text-slate-200">Listings found</p></div>
+                  <div>{loading ? <><svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity=".3" strokeWidth="3"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg><p className="mt-1 text-xs text-slate-200">Searching nearby PGs</p></> : <><p className="text-2xl font-extrabold leading-none">{pgs.length}</p><p className="mt-1 text-xs font-medium text-slate-200">Listings found</p></>}</div>
                 </div>
               </div>
               <form onSubmit={handleSearch} className="mt-7 flex max-w-4xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg shadow-slate-950/15 sm:flex-row sm:items-center">
@@ -3500,7 +3686,21 @@ function App() {
 
             {/* Compact, accessible preference panel: draft choices are applied together. */}
             {pgs.length > 0 && (
-              <section aria-label="PG filters and preferences" className="mb-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+              <details aria-label="PG filters and preferences" className="group mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_5px_24px_rgba(15,35,70,0.06)] transition-all open:border-blue-200 open:shadow-[0_12px_32px_rgba(15,35,70,0.09)]">
+                <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 px-4 py-3.5 marker:hidden sm:px-5 [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="12" r="2" fill="white"/><circle cx="11" cy="17" r="2" fill="white"/></svg>
+                    </span>
+                    <span className="min-w-0"><span className="block text-sm font-extrabold tracking-tight text-[#112747] sm:text-[15px]">Refine your results</span><span className="mt-0.5 block text-xs text-slate-500">Filters, commute limits &amp; Smart Match</span></span>
+                  </span>
+                  <span className="flex items-center gap-2.5">
+                    <span className="hidden rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 sm:inline-flex">Smart Match: {({ balanced: "Balanced", commute: "Fastest", rating: "Top rated", nearest: "Nearest" })[matchPriority] || "Balanced"}</span>
+                    {([pgPreference !== "all", minRating !== "any", maxCommute !== "any", maxDistance !== "any", matchPriority !== "balanced"].filter(Boolean).length > 0) && <span className="rounded-full bg-[#112747] px-2.5 py-1 text-xs font-bold text-white">{[pgPreference !== "all", minRating !== "any", maxCommute !== "any", maxDistance !== "any", matchPriority !== "balanced"].filter(Boolean).length} active</span>}
+                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-[#112747] transition-colors group-hover:border-blue-200 group-hover:bg-blue-50"><span className="group-open:hidden">Customize</span><span className="hidden group-open:inline">Collapse</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6"/></svg></span>
+                  </span>
+                </summary>
+                <div className="border-t border-slate-100 px-4 pb-5 pt-5 sm:px-5">
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5">
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-[#112747]">Find your ideal PG</h2>
@@ -3631,10 +3831,33 @@ function App() {
                     {loading ? "Applying…" : "Apply filters & show PGs →"}
                   </button>
                 </div>
+                </div></details>
+            )}
+
+{/* Compact map access: listings remain the primary view; the map opens only on request. */}
+            {pgs.length > 0 && (
+              <section className="mb-5 overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-[#102747] to-[#174477] text-white shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6 text-sky-200"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15m6-12v15"/><circle cx="12" cy="10" r="2"/></svg>
+                    </span>
+                    <div><h3 className="text-base font-bold">Explore {filteredPGs.length} PGs near {searchedDestination || destination}</h3><p className="mt-0.5 text-xs text-blue-100">Browse listings below or see their locations on an interactive map.</p></div>
+                  </div>
+                  <button type="button" aria-expanded={mapExpanded} aria-controls="pgpilot-map-panel" onClick={() => setMapExpanded((open) => !open)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#112747] shadow-sm transition hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                    {mapExpanded ? "Hide map" : "View on map"}<span aria-hidden="true">{mapExpanded ? "↑" : "↗"}</span>
+                  </button>
+                </div>
+                {mapExpanded && (
+                  <div id="pgpilot-map-panel" className="border-t border-white/15 bg-white p-3 text-slate-900 sm:p-4">
+                    <MapTest pgs={filteredPGs} destinationLocation={destinationLocation} onSelectPG={setDetailPG} commutes={commutes} travelMode={travelMode} matchScores={matchScores} />
+                    <p className="mt-3 text-xs text-slate-500">Click a map pin to see a PG and open its details. Commute estimates do not include live traffic.</p>
+                  </div>
+                )}
               </section>
             )}
 
-{/* Travel mode selector */}
+            {/* Travel mode selector */}
 
 
 
@@ -4033,23 +4256,12 @@ function App() {
 
 
 
-                      <div className="mb-4 flex items-center justify-between rounded-2xl border border-sky-100 bg-gradient-to-r from-sky-50 to-blue-50 px-4 py-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">PGPilot Match Score</p>
-                        <p className="mt-1 text-xs text-slate-500">Personalized by your Smart Match preference</p>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <h4 className="line-clamp-2 text-base font-extrabold text-[#112747]">{pg.name}</h4>
+                        <span className="shrink-0 rounded-xl bg-blue-50 px-3 py-2 text-sm font-extrabold text-blue-800" title="Commute, distance and rating weighted score">{matchScores[pg.googlePlaceId] == null ? "Pending" : `${matchScores[pg.googlePlaceId]}/100`} <span className="text-[10px] font-semibold">Match</span></span>
                       </div>
-                      <div className="text-right">
-                        <span className="block text-2xl font-extrabold tracking-tight text-[#112747]">
-                          {matchScores[pg.googlePlaceId] == null ? "Pending" : `${matchScores[pg.googlePlaceId]}/100`}
-                        </span>
-                        <span className="text-[11px] font-medium text-blue-700">Smart Match</span>
-                      </div>
-                    </div>
-                    <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label={`Match score for ${pg.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={matchScores[pg.googlePlaceId] == null ? undefined : Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}>
-                      <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, Number(matchScores[pg.googlePlaceId]) || 0))}%` }} />
-                    </div>
-                    <details className="mb-4 rounded-2xl border border-blue-100 bg-blue-50/40 px-4 py-3 text-sm">
-                      <summary className="cursor-pointer font-bold text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">Why this match? · View score breakdown</summary>
+                    <details className="mb-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-xs">
+                      <summary className="cursor-pointer font-bold text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">ⓘ Match score breakdown</summary>
                       {(() => {
                         const explanation = getMatchExplanation(pg, destinationLocation, commutes[pg.googlePlaceId]?.mode === travelMode ? commutes[pg.googlePlaceId] : null, matchPriority);
                         if (!explanation) return <p className="mt-3 text-slate-600">Score unavailable until commute and location data are ready.</p>;
@@ -4066,35 +4278,36 @@ function App() {
                     <PGPhoto key={`${pg.googlePlaceId}-${pg.photoUrl || "none"}`} pg={pg} className="mb-4 h-52 overflow-hidden rounded-2xl ring-1 ring-slate-100 sm:h-56" />
 
                       {/* Compact Save and Compare actions */}
-                      <div className="mb-4 grid grid-cols-2 gap-3">
+                      <div className="mb-3 flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => toggleFavorite(pg)}
                           disabled={favoritePendingId !== null || favoritesBusy}
                           aria-pressed={favorites.some((saved) => saved.googlePlaceId === pg.googlePlaceId)}
-                          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
+                          title="Save or remove this PG from your wishlist"
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold transition disabled:opacity-50 ${
                             favorites.some((saved) => saved.googlePlaceId === pg.googlePlaceId)
                               ? "border-rose-200 bg-rose-50 text-rose-700"
                               : "border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50"
                           }`}
                         >
                           <span aria-hidden="true" className="text-lg">{favorites.some((saved) => saved.googlePlaceId === pg.googlePlaceId) ? "♥" : "♡"}</span>
-                          {favorites.some((saved) => saved.googlePlaceId === pg.googlePlaceId) ? "Saved" : "Save PG"}
+
                         </button>
                         <button
                           type="button"
                           onClick={() => togglePGComparison(pg.googlePlaceId)}
                           disabled={selectedPGIds.length >= 3 && !selectedPGIds.includes(pg.googlePlaceId)}
                           aria-pressed={selectedPGIds.includes(pg.googlePlaceId)}
-                          title={selectedPGIds.length >= 3 && !selectedPGIds.includes(pg.googlePlaceId) ? "Compare up to 3 PGs" : undefined}
-                          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                          title={selectedPGIds.length >= 3 && !selectedPGIds.includes(pg.googlePlaceId) ? "Compare up to 3 PGs" : "Add or remove from comparison"}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
                             selectedPGIds.includes(pg.googlePlaceId)
                               ? "border-blue-700 bg-blue-50 text-blue-800"
                               : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"
                           }`}
                         >
                           <span aria-hidden="true" className="text-base">⇄</span>
-                          {selectedPGIds.includes(pg.googlePlaceId) ? "Selected" : "Compare"}
+
                         </button>
                       </div>
 
@@ -4106,7 +4319,7 @@ function App() {
 
 
 
-                        <h4 className="text-lg font-extrabold leading-snug tracking-tight text-slate-900">
+                        <h4 className="sr-only">
 
 
 
@@ -4230,7 +4443,7 @@ function App() {
 
 
 
-                            Straight-line distance
+                            Distance from destination (approx.)
 
 
 
@@ -4346,19 +4559,7 @@ function App() {
 
 
 
-                          <p className="mt-3 text-xs text-blue-700">
 
-
-
-                            Estimated using OpenRouteService.
-
-
-
-                            No live traffic.
-
-
-
-                          </p>
 
 
 
@@ -4590,6 +4791,7 @@ function App() {
 
 
               selectedPGs={selectedPGs}
+              matchScores={matchScores}
 
 
 
@@ -4635,62 +4837,6 @@ function App() {
 
 
           </section>
-
-
-
-        )}
-
-
-
-        {/* Google Map */}
-
-
-
-        {!showFavorites && view === "results" && searched && !loading && !error && pgs.length > 0 && (
-
-
-
-        <section className="mx-auto max-w-7xl px-6 pb-12">
-
-
-
-          <h2 className="mb-5 text-2xl font-bold">
-
-
-
-            Nearby PGs on Google Maps
-
-
-
-          </h2>
-
-
-
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-
-
-
-            <MapTest
-
-
-
-              pgs={pgs}
-
-
-
-              destinationLocation={destinationLocation}
-
-
-
-            />
-
-
-
-          </div>
-
-
-
-        </section>
 
 
 
