@@ -3518,7 +3518,7 @@ function App() {
 
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 lg:grid-cols-2">
 
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Built around your commute</p><h2 className="mt-3 text-3xl font-extrabold text-[#112747] sm:text-4xl">A cheaper room isn't always a better deal.</h2><p className="mt-5 leading-8 text-slate-600">Long daily journeys can cost you time and money. PGPilot puts estimated commute time alongside listing details, so you can make a more informed choice.</p><button type="button" onClick={focusHomepageSearch} className="mt-7 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"><svg viewBox="0 0 24 24" className="inline h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m20 20-4-4"/></svg> Create an Account</button></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Built around your commute</p><h2 className="mt-3 text-3xl font-extrabold text-[#112747] sm:text-4xl">A cheaper room isn't always a better deal.</h2><p className="mt-5 leading-8 text-slate-600">Long daily journeys can cost you time and money. PGPilot puts estimated commute time alongside listing details, so you can make a more informed choice.</p><button type="button" onClick={focusHomepageSearch} className="mt-7 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"><svg viewBox="0 0 24 24" className="inline h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg> Explore PGs</button></div>
 
             <div className="rounded-3xl bg-[#112747] p-7 text-white shadow-xl sm:p-10"><p className="text-sm font-semibold text-blue-200">YOUR PG SEARCH, SIMPLIFIED</p><div className="mt-7 space-y-4">{["Find accommodation near your destination","Check estimated travel times","Compare listings side by side","Save your personal shortlist"].map((item,index) => <div key={item} className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/10 p-4"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500 font-bold">{index+1}</span><span className="font-medium">{item}</span></div>)}</div><p className="mt-6 text-xs text-slate-300">Listing availability and commute estimates depend on external data providers.</p></div>
 
@@ -3526,7 +3526,10 @@ function App() {
 
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 py-20 text-center"><h2 className="text-3xl font-extrabold text-[#112747]">Ready to find your next place?</h2><p className="mx-auto mt-4 max-w-xl text-slate-600">Start with the destination you visit most. We'll help you explore nearby options.</p><button type="button" onClick={focusHomepageSearch} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-7 py-3 font-semibold text-white hover:bg-blue-800"><svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Find PGs</button></section>
+        <section className="mx-auto max-w-5xl px-6 py-20 text-center"><h2 className="text-3xl font-extrabold text-[#112747]">Ready to find your next place?</h2><p className="mx-auto mt-4 max-w-xl text-slate-600">Start with the destination you visit most. We'll help you explore nearby options.</p><div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <button type="button" onClick={focusHomepageSearch} className="inline-flex min-h-13 items-center justify-center gap-3 rounded-xl bg-blue-700 px-8 py-4 text-base font-bold text-white shadow-lg shadow-blue-700/20 transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Find PGs</button>
+          {!token && <button type="button" onClick={() => setAuthMode("login")} className="inline-flex min-h-13 items-center justify-center gap-3 rounded-xl border-2 border-blue-700 bg-white px-8 py-4 text-base font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Create an Account</button>}
+        </div></section>
 
         {/* Live platform metrics — all numbers remain connected to existing API state */}
         <section className="border-t border-slate-200 bg-[#f7f9fc] px-5 py-16 sm:px-8 sm:py-20">
@@ -3793,15 +3796,15 @@ function App() {
                 <p className="mt-2 text-xs leading-5 text-slate-500">Distance is measured in a straight line. Commute uses your selected travel mode. Filters apply to the PG listings currently retrieved from Google Places.</p>
 
                 <div className="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div aria-live="polite" className="min-w-0">
-                    <p className="text-sm font-semibold text-[#112747]">{filteredPGs.length} of {pgs.length} PGs match your applied filters</p>
+                  <div aria-live="polite" className="min-w-0 flex-1 rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-4 sm:px-6 sm:py-5">
+                    <p className="text-base font-extrabold leading-7 text-[#112747] sm:text-lg"><span className="text-blue-700">{filteredPGs.length} of {pgs.length} PGs</span> match your applied filters</p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {minRating !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Rating {minRating}+</span>}
-                      {maxCommute !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Commute ≤ {maxCommute} min</span>}
-                      {maxDistance !== "any" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">Distance ≤ {maxDistance} km</span>}
-                      {pgPreference !== "all" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">{pgPreference === "men" ? "Men's PG" : pgPreference === "women" ? "Women's PG" : "Co-living"}</span>}
+                      {minRating !== "any" && <span className="inline-flex min-h-9 items-center rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-blue-800 shadow-sm">Rating {minRating}+</span>}
+                      {maxCommute !== "any" && <span className="inline-flex min-h-9 items-center rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-blue-800 shadow-sm">Commute ≤ {maxCommute} min</span>}
+                      {maxDistance !== "any" && <span className="inline-flex min-h-9 items-center rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-blue-800 shadow-sm">Distance ≤ {maxDistance} km</span>}
+                      {pgPreference !== "all" && <span className="inline-flex min-h-9 items-center rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-blue-800 shadow-sm">{pgPreference === "men" ? "Men's PG" : pgPreference === "women" ? "Women's PG" : "Co-living"}</span>}
                     </div>
-                    {filterNotice && <p className="mt-2 text-xs text-slate-500">{filterNotice}</p>}
+                    {filterNotice && <p className="mt-3 text-sm font-medium leading-6 text-slate-700">{filterNotice}</p>}
                     {maxCommute !== "any" && matrixLoading && <p className="mt-1 text-xs text-slate-500">Calculating commute times…</p>}
                   </div>
                   <button type="button" disabled={loading} onClick={() => {
