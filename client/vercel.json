@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://pgpilot.onrender.com/api/$1"
+      "destination": "https://pgpilot-api.wonderfulocean-f778d0aa.centralindia.azurecontainerapps.io/api/$1"
     },
     {
       "source": "/(.*)",
