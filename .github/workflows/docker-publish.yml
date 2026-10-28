@@ -1,5 +1,5 @@
 
-name: Build and Publish PGPilot Backend
+name: Build and Deploy PGPilot Backend
 
 on:
   push:
@@ -12,9 +12,10 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,4 +38,27 @@ jobs:
           context: ./server
           file: ./server/Dockerfile
           push: true
-          tags: ghcr.io/aaquil-16/pgpilot-backend:latest
+          tags: |
+            ghcr.io/aaquil-16/pgpilot-backend:latest
+            ghcr.io/aaquil-16/pgpilot-backend:${{ github.sha }}
+
+      - name: Login to Microsoft Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Docker image to Azure Container Apps
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name pgpilot-api \
+              --resource-group rg-pgpilot \
+              --image ghcr.io/aaquil-16/pgpilot-backend:${{ github.sha }}
+
+      - name: Verify Azure deployment
+        run: |
+          curl --fail --retry 5 --retry-delay 10 \
+            https://pgpilot-api.wonderfulocean-f778d0aa.centralindia.azurecontainerapps.io/api/health
