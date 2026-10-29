@@ -1,267 +1,130 @@
 <div align="center">
 
 # 🏠 PGPilot
+### Commute-Aware PG Discovery with Explainable Smart Match Ranking
 
-### Find smarter. Compare confidently. Stay closer.
+**Find accommodation that fits your commute, preferences, and everyday needs.**
 
-**A commute-aware PG discovery platform with real-world listings, explainable recommendations, and personalized property shortlisting.**
+[![React](https://img.shields.io/badge/Frontend-React-149ECA?logo=react&logoColor=white)](https://react.dev/) [![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/) [![PostgreSQL](https://img.shields.io/badge/Database-Neon%20PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://neon.tech/) [![Azure](https://img.shields.io/badge/Cloud-Azure%20Container%20Apps-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/products/container-apps/) [![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/) [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
-[![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-149ECA?logo=react&logoColor=white)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-43853D?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-
-**[🌐 Live Website](https://pgpilot-finder.vercel.app)** · **[💻 Source Code](https://github.com/AAQUIL-16/PGPilot)**
+[**Live Application**](https://pg-pilot.vercel.app/) · [**Render Backup Preview**](https://pg-pilot-git-render-backup-test-aaquil-16.vercel.app/) · [**Repository**](https://github.com/AAQUIL-16/PGPilot)
 
 </div>
 
----
-
-## 📌 Overview
-
-**PGPilot** is a full-stack web application that helps students and working professionals discover paying-guest (PG) accommodations based on **where they need to travel**, rather than relying only on locality names or raw ratings.
-
-Users can search around a college or workplace, explore accommodation listings, estimate driving/walking/cycling commute times, apply practical filters, understand why a property receives its **Smart Match score**, and save or compare promising options.
-
-> **Project principle:** A nearby PG is not necessarily the most convenient PG. Travel time, distance, rating, and personal priorities should be considered together.
-
-## 🎯 Problem Statement
-
-Traditional accommodation searches can make it difficult to:
-
-- Evaluate the actual daily commute to a destination.
-- Compare properties consistently across different travel modes.
-- Understand how a recommendation or ranking was calculated.
-- Shortlist and revisit properties without losing search context.
-- Balance travel convenience, proximity, and public ratings.
-
-**PGPilot's approach:** destination-first discovery, real-world listing information, route-based commute estimates, and transparent rule-based ranking.
-
-## ✨ Key Features
-
-| Feature | What it does |
-|---|---|
-| 🔎 Destination-first search | Search for PGs around a college, office, or other destination. |
-| 📍 Google Places integration | Retrieves accommodation listings and available place details from Google Places. |
-| 🚗 Travel-mode comparison | Estimates commutes for driving, walking, and cycling using routing services. |
-| 🧠 Explainable Smart Match | Ranks listings using commute, straight-line distance, and Google rating, with a visible score breakdown. |
-| 🎛️ Advanced filters | Filter by accommodation category, rating, maximum commute, and distance; supports custom limits. |
-| ❤️ Wishlist | Save properties to revisit later and manage them on a dedicated page. |
-| ⚖️ PG comparison | Select up to three properties for side-by-side comparison. |
-| 🕘 Search history | Revisit and repeat earlier searches. |
-| 🔐 Authentication | Account access and protected, user-specific actions. |
-| 👤 Account area | Profile, settings, feedback, support, and account navigation. |
-| 📊 Community statistics | Displays platform activity such as users, searches, feedback, and ratings from the backend. |
-| 📱 Responsive UI | Tailwind-based layouts for desktop and smaller screens. |
-
-**Data transparency:** Listings and Google ratings originate from third-party sources; they should not be described as independently inspected or verified PGs. Commute times are **estimates**, not guaranteed travel times. Availability and rent should be confirmed directly with the property.
+> **Live URL note:** Confirm the production Vercel URL above before publishing this README. The Render preview URL is a test deployment, not the production website.
 
 ---
 
-## 🖼️ Screenshots
+## Overview
 
-### 1. Homepage — destination-first discovery
+**PGPilot** is a full-stack web application that helps students and other accommodation seekers discover nearby paying guest (PG) properties based on a chosen destination. Instead of relying only on straight-line proximity or a single rating, PGPilot combines **real place discovery**, **route-aware commute information**, and an **explainable Smart Match ranking** to support better accommodation decisions.
 
-![PGPilot homepage](Screenshots/homepage.png)
+The application uses Google Places to discover real listings, Google Maps for visualization, OpenRouteService for travel estimates, and a PostgreSQL database hosted on Neon for application-owned user data. The React frontend runs on Vercel; the containerized Express API runs primarily on Azure Container Apps, with a separately tested Render deployment as a fallback option.
 
-The homepage introduces the destination-based search workflow, quick destination suggestions, and the platform's three core capabilities: listing discovery, commute insights, and saved properties.
+## Highlights
 
-### 2. Community statistics
+- **Real PG discovery:** Search accommodation around a user-selected destination using Google Places data rather than a static list of demonstration properties.
+- **Interactive map:** Explore search results geographically using Google Maps.
+- **Commute-aware search:** Estimate travel distance and time using OpenRouteService, including supported driving, walking, and cycling modes.
+- **Explainable Smart Match:** Rank results using commute factors, Google ratings, and user-adjustable preference weights.
+- **Search and compare:** Filter results, save favorites, and compare PG options.
+- **Accounts and history:** JWT-based authentication, user profiles, search history, and feedback backed by PostgreSQL.
+- **Cloud-native delivery:** Docker image builds published to GitHub Container Registry and deployed automatically to Azure via GitHub Actions.
+- **Fallback deployment:** Separate Vercel preview connected to a Render-hosted backend for backup testing.
 
-![PGPilot community statistics](Screenshots/community.png)
+## Screenshots
 
-The statistics section presents platform activity. Counts and averages are loaded from the application's statistics endpoint rather than being hard-coded into the interface.
+Add screenshots from the actual application under `assets/screenshots/` and replace the placeholders below.
 
-### 3. Search results header
+| Home / Destination Search | PG Results & Map |
+|:---:|:---:|
+| _Add `assets/screenshots/home.png`_ | _Add `assets/screenshots/results-map.png`_ |
 
-![PGPilot results search](Screenshots/results-search.png)
-![PGPilot results search](Screenshots/results-search1.png)
+| Smart Match / Comparison | Favorites / Profile |
+|:---:|:---:|
+| _Add `assets/screenshots/comparison.png`_ | _Add `assets/screenshots/favorites.png`_ |
 
-
-After searching, users can review their destination and the number of discovered listings before examining the results, travel estimates, and filters.
-
-### 4. Travel mode selector
-
-![PGPilot travel mode selector](Screenshots/travel-modes.png)
-
-Users can switch between driving, walking, and cycling. The interface displays calculation status for the selected travel mode.
-
-### Additional screenshots to add
-
-The following features are implemented in the application but are **not illustrated here yet**. Capture screenshots from your current website and save them with these filenames:
-
-| Screenshot file | Suggested screen |
-|---|---|
-| `screenshots/smart-match.png` | PG cards with Smart Match score and explanation |
-| `screenshots/advanced-filters.png` | Expanded filters and custom limits |
-| `screenshots/wishlist.png` | Dedicated saved-properties page |
-| `screenshots/compare.png` | Side-by-side comparison of selected PGs |
-| `screenshots/account.png` | Account menu or profile screen (hide personal information) |
-
----
-
-## 🏗️ System Architecture
-
-![PGPilot System Architecture](Screenshots/Architecture.png)
-
-### Component responsibilities
-
-| Layer | Responsibility |
-|---|---|
-| **Frontend** | Destination input, search state, filters, maps/UI, account screens, saved listings, comparison, and score explanations. |
-| **Backend** | REST endpoints, third-party API access, request validation, authentication, and persistence. |
-| **Database** | User-related records, favorites, search history, feedback, and platform activity. |
-| **Google Places** | Place discovery and available public listing information. |
-| **Routing provider** | Geocoding and travel-time/distance estimates for selected travel modes. |
-| **Smart Match** | Explainable, client-side rule-based scoring using available listing and commute information. |
-
-### End-to-end search workflow
+## System Architecture
 
 ```mermaid
-sequenceDiagram
-    actor User
-    participant UI as React frontend
-    participant API as Express API
-    participant GP as Google Places
-    participant RT as Routing service
-    participant DB as PostgreSQL
+flowchart TD
+    U[User Browser] --> V[Vercel - React Frontend]
+    V -->|/api requests| A[Azure Container Apps - Express API]
+    V -. Backup preview route .-> R[Render - Express API]
+    A --> N[(Neon PostgreSQL)]
+    R --> N
+    A --> G[Google Places / Geocoding]
+    R --> G
+    A --> O[OpenRouteService]
+    R --> O
+    V --> M[Google Maps JavaScript API]
 
-    User->>UI: Enter destination and search
-    UI->>API: Request destination geocoding
-    API->>RT: Resolve destination coordinates
-    RT-->>API: Coordinates
-    API-->>UI: Destination location
-    UI->>API: Search accommodation listings
-    API->>GP: Places search
-    GP-->>API: Listing details
-    API-->>UI: PG listings
-    UI->>API: Request commute estimates
-    API->>RT: Route / travel-time calculations
-    RT-->>API: Estimated commutes
-    API-->>UI: Commute data
-    UI->>UI: Apply filters and Smart Match ranking
-    UI-->>User: Display ranked results and explanations
-    opt Authenticated user saves a PG
-        User->>UI: Save property
-        UI->>API: Update favorites
-        API->>DB: Persist favorite
-        API-->>UI: Updated wishlist
-    end
+    GH[GitHub main branch] --> CI[GitHub Actions]
+    CI --> D[Docker Build]
+    D --> CR[GitHub Container Registry]
+    CR --> A
 ```
 
----
+**Production request path:** Vercel forwards `/api/*` requests to the Azure backend through `vercel.json`. The Render preview branch uses a separate rewrite to Render. This is a **manual fallback option**, not automatic failover.
 
-## 🧠 Smart Match — Explainable Recommendation Engine
+## Technology Stack
 
-PGPilot uses a **transparent, rule-based score**, not a trained machine-learning model. The score is calculated from three measurable signals:
-
-1. **Commute time** — estimated time from the property to the destination.
-2. **Straight-line distance** — geographic distance to the destination.
-3. **Google rating** — publicly available rating, when present.
-
-### Weighted score
-
-For a chosen priority, the score is calculated as:
-
-\[
-S = w_c\,C + w_d\,D + w_r\,R
-\]
-
-Where the normalized component scores are:
-
-\[
-C = \max(0,\min(1,1-t/30)),\qquad
-D = \max(0,\min(1,1-k/5)),\qquad
-R = \max(0,\min(1,r/5))
-\]
-
-- `t`: estimated commute time in minutes
-- `k`: straight-line distance in kilometers
-- `r`: Google rating on a 0–5 scale
-- `w_c`, `w_d`, `w_r`: selected priority weights (sum to 100)
-
-### Ranking priorities and weights
-
-| Priority | Commute | Distance | Rating |
-|---|---:|---:|---:|
-| **Balanced** | 45% | 20% | 35% |
-| **Fastest commute** | 70% | 15% | 15% |
-| **Top rated** | 20% | 10% | 70% |
-| **Nearest** | 20% | 65% | 15% |
-
-The UI exposes the same component weights used in the calculation, so users can understand **why one PG ranks above another**.
-
-**Important implementation details:**
-- A property without a usable commute estimate is **not assigned a Smart Match score**.
-- If a Google rating is missing, the current scoring implementation uses a neutral `2.5/5` rating component and labels it as unrated.
-- The score is a **relative discovery aid**, not a certification of property quality, safety, affordability, or availability.
-- The current implementation is rule-based; it does **not** claim AI model training or predictive accuracy.
-
----
-
-## 🧰 Technology Stack
-
-| Category | Technology |
+| Layer | Technologies |
 |---|---|
-| Frontend | React, Vite, JavaScript (JSX) |
-| Styling | Tailwind CSS |
-| Backend | Node.js, Express.js |
-| Database | PostgreSQL |
-| Authentication | JWT-based account flow |
-| Places / listing data | Google Places API |
-| Geocoding and routing | Routing/geocoding backend integrations, including OpenRouteService in the project design |
-| Deployment | Vercel (frontend), Render (backend) |
-| Version control | Git, GitHub |
+| Frontend | React.js, Vite, Tailwind CSS |
+| Backend | Node.js, Express.js, REST APIs |
+| Database | PostgreSQL hosted on Neon |
+| Authentication | JWT |
+| Places and mapping | Google Places API, Google Maps JavaScript API |
+| Routing | OpenRouteService API |
+| Frontend hosting | Vercel |
+| Primary backend hosting | Microsoft Azure Container Apps |
+| Backup backend hosting | Render |
+| Containerization | Docker, GitHub Container Registry (GHCR) |
+| CI/CD | GitHub Actions, Azure federated identity (OIDC) |
 
-> The repository's actual `package.json`, backend route files, and deployment configuration are the authoritative sources for exact package versions and environment-variable names.
+## How Smart Match Works
 
----
+PGPilot helps users evaluate results using more than a single popularity score:
 
-## 🔌 API Overview
+1. **Discover** real PG listings near a destination.
+2. **Estimate** commute distance and travel time along supported routes.
+3. **Consider** available place ratings and user preferences.
+4. **Rank** options using adjustable weights and expose the factors behind the recommendation.
+5. **Compare and save** suitable results for later review.
 
-The current React application calls the following backend endpoints. Consult the Express route definitions for request/response contracts and authorization requirements.
+> Smart Match is a preference-based recommendation mechanism, not a guarantee of accommodation quality or availability. External ratings and place details belong to their respective data providers.
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `GET` | `/api/locations/geocode` | Resolve a destination to coordinates |
-| `GET` | `/api/pgs/search` | Retrieve PG search results |
-| `POST` | `/api/commute/matrix` | Calculate travel estimates for multiple listings |
-| `GET` | `/api/commute` | Request an individual commute estimate |
-| `GET` | `/api/stats` | Retrieve platform activity statistics |
-| `GET` / other | `/api/favorites` | Fetch and manage saved properties |
-| `GET` / other | `/api/search-history` | Retrieve and manage search history |
-| `GET` / other | `/api/profile` | Access profile information |
-| `POST` | `/api/feedback` | Submit platform feedback |
+## Deployment and CI/CD
 
-**Note:** This is a frontend-observed API overview, not a complete OpenAPI specification. Additional auth, settings, and support routes may exist in the backend.
+The backend is packaged as a Docker image and published to GitHub Container Registry. On qualifying pushes to `main`, GitHub Actions builds a new image, tags it with the commit SHA, authenticates to Azure using a federated identity, and updates the Azure Container App.
 
----
-
-## 🗄️ Data and Persistence
-
-PostgreSQL supports the application's persistent, user-oriented features. At the domain level, the data model includes:
-
-```mermaid
-erDiagram
-    USER ||--o{ FAVORITE : saves
-    USER ||--o{ SEARCH_HISTORY : performs
-    USER ||--o{ FEEDBACK : submits
-    FAVORITE }o--|| PLACE_REFERENCE : references
-    SEARCH_HISTORY }o--|| DESTINATION_REFERENCE : searches
+```text
+Push backend changes to main
+          ↓
+GitHub Actions workflow
+          ↓
+Docker build + image push
+          ↓
+GHCR (commit-SHA image tag)
+          ↓
+Azure Container Apps update
+          ↓
+API health check
 ```
 
-This is a **conceptual model**, not an exact export of your SQL schema. Review the repository's migrations or schema before documenting table names, columns, foreign keys, and indexes as definitive.
+The Azure Container App uses HTTP autoscaling with **minimum replicas 0** and **maximum replicas 1** to reduce idle compute usage. This may introduce a cold start on the first request after inactivity.
 
----
+The Render backend and Vercel preview branch provide an independently hosted API deployment for manual backup testing. Both backends still depend on shared services such as Neon and external APIs.
 
-## 🚀 Getting Started
+## Running Locally
 
 ### Prerequisites
 
 - Node.js and npm
-- PostgreSQL
-- Valid API credentials for the external services configured by the backend
-- Git
+- A PostgreSQL database
+- Google Places and Google Maps API credentials
+- OpenRouteService API credentials
 
 ### 1. Clone the repository
 
@@ -270,157 +133,92 @@ git clone https://github.com/AAQUIL-16/PGPilot.git
 cd PGPilot
 ```
 
-### 2. Install frontend dependencies
-
-```bash
-cd client
-npm install
-```
-
-### 3. Configure the backend
-
-Open another terminal and locate the backend folder (commonly `server/` or `backend/`). Install its dependencies:
+### 2. Configure the backend
 
 ```bash
 cd server
 npm install
 ```
 
-> If your repository uses a different backend folder name, use that folder instead.
-
-Create the environment files expected by the repository. Typical configuration categories are shown below; **verify the exact variable names in your backend source before using them**:
+Create `server/.env` with the environment variables used by your deployment:
 
 ```dotenv
-# Illustrative names only — match the actual code
-DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/pgpilot
-JWT_SECRET=replace_with_a_long_random_secret
-GOOGLE_PLACES_API_KEY=your_google_places_key
-ORS_API_KEY=your_routing_api_key
 PORT=5000
+NODE_ENV=development
+DATABASE_URL=postgresql://YOUR_CONNECTION_STRING
+JWT_SECRET=YOUR_LONG_RANDOM_SECRET
+GOOGLE_PLACES_API_KEY=YOUR_SERVER_SIDE_KEY
+OPENROUTESERVICE_API_KEY=YOUR_ORS_KEY
 ```
 
-For the Vite frontend, configure the backend URL only if your application uses it:
+**Never commit `.env` files or real credentials.** Ensure your database schema is initialized using the repository's database setup/migration procedure before testing authenticated features.
 
-```dotenv
-VITE_API_BASE_URL=http://localhost:5000
-```
-
-Never commit `.env` files or real API keys. Ensure `.gitignore` excludes secrets.
-
-### 4. Initialize PostgreSQL
-
-Create the database and run the migrations, SQL scripts, or ORM setup included in the repository. The exact command depends on the database tooling in your current backend.
-
-### 5. Start the backend
-
-From the backend directory, use the script defined in its `package.json` (often `npm run dev` or `npm start`).
-
-### 6. Start the frontend
+Start the backend:
 
 ```bash
-cd client
+npm start
+```
+
+Check `http://localhost:5000/api/health`.
+
+### 3. Configure and start the frontend
+
+From the repository root:
+
+```bash
+npm install
 npm run dev
 ```
 
-Open the local URL displayed by Vite (usually `http://localhost:5173`).
+Open the local URL printed by Vite. Configure the frontend's Maps JavaScript API key and local API proxy according to the project's existing frontend configuration. In Google Cloud Console, authorize the local development origin for the browser-facing Maps key.
 
-### 7. Test the main user journey
+> **Configuration note:** Check the current frontend environment variable names and scripts in the repository before copying settings between environments; server-side and browser-facing Google API keys should remain separate.
 
-1. Open PGPilot and enter a destination.
-2. Search for PGs and confirm listings load.
-3. Change travel mode and inspect commute estimates.
-4. Apply rating, distance, and commute filters.
-5. Switch Smart Match priority and inspect the score breakdown.
-6. Sign in, save a PG, and open Wishlist.
-7. Compare properties and revisit Search History.
+## API Examples
 
----
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | API health check |
+| `GET` | `/api/locations/geocode?destination=VIT%20Vellore` | Resolve a destination |
+| `GET` | `/api/pgs/search?destination=...&latitude=...&longitude=...` | Search PGs (JWT required) |
+| `GET` | `/api/commute?...` | Estimate route distance and time |
+| `POST` | `/api/commute/matrix` | Calculate and rank multiple commutes |
+| `GET` | `/api/pgs/photo?name=...` | Proxy a Google Places photo |
 
-## ☁️ Deployment
+Additional API groups include authentication, favorites, profiles, statistics, feedback, and search history. Protected routes require a valid authentication token.
 
-| Component | Hosting |
-|---|---|
-| Frontend | [Vercel](https://vercel.com/) |
-| Backend | [Render](https://render.com/) |
-| Database | PostgreSQL (provider depends on deployment configuration) |
+## Security and Reliability
 
-**Live app:** https://pgpilot-finder.vercel.app
+- JWT-protected routes for account-specific features.
+- Authentication rate limiting and HTTP security headers through Express middleware.
+- Server-side API secrets stored as deployment environment variables/secrets.
+- Separate browser-facing Google Maps key restrictions for authorized website origins.
+- Commit-tagged container images for traceable deployments.
+- Azure scale-to-zero for cost-conscious operation.
+- Separate Render deployment and preview frontend for manual fallback testing.
 
-When deploying, configure production API URLs, CORS rules, server-side API keys, database credentials, and allowed origins. Do not expose secret API keys in the Vite client bundle.
+**Current limitation:** The Azure and Render backends share some external dependencies. The fallback is not an automatic disaster-recovery system; database backups, monitoring, and periodic end-to-end tests are recommended before relying on it for critical demonstrations.
 
----
+## Future Improvements
 
-## 🔐 Security and Reliability Considerations
+- Automated smoke tests for login, search, favorites, and map rendering.
+- Deployment monitoring and alerts.
+- Database backup and restore drills.
+- A documented, one-click fallback/rollback procedure.
+- More comprehensive PG owner information and verification workflows.
 
-- Protect user-specific endpoints with authentication and authorization checks.
-- Keep database credentials, JWT secrets, and third-party API keys on the server.
-- Validate user inputs and filter limits on both frontend and backend.
-- Apply sensible API rate limits and handle provider failures gracefully.
-- Treat public ratings and third-party property details as external data.
-- Clearly distinguish estimated commute times from guaranteed arrival times.
-- Avoid exposing personal information in screenshots, logs, and public demo accounts.
+## Project Links
 
-These are engineering considerations; this README does **not** claim that a formal security audit or penetration test has been completed.
-
----
-
-## 🧪 Testing Checklist
-
-- [ ] Destination geocoding handles valid and invalid searches.
-- [ ] PG listings load correctly or show a useful empty/error state.
-- [ ] Driving, walking, and cycling update commute data.
-- [ ] Smart Match changes ranking according to selected priority.
-- [ ] Custom rating, distance, and commute filters apply correctly.
-- [ ] Wishlist remains consistent after saving and removing PGs.
-- [ ] Compare PGs enforces the three-property limit.
-- [ ] Search history and profile require the appropriate account state.
-- [ ] Mobile navigation and account menu remain usable.
-- [ ] API credentials are absent from the public frontend bundle.
-
-The checklist is for verification and is **not a claim that automated tests have passed**.
-
----
-
-## 🛣️ Future Enhancements
-
-- More complete result pagination and broader search coverage.
-- Additional commute modes where supported by the routing provider.
-- Richer verified-property details, including rent and amenities, when reliable data becomes available.
-- Saved searches and alerts for newly discovered properties.
-- Better accessibility, automated tests, and performance monitoring.
-- Property-owner onboarding and verified listing management, if the product expands beyond third-party discovery.
-
----
-
-## 💡 What Makes PGPilot Different?
-
-**Destination-first discovery:** Users begin with where they need to go, not just where they want to live.
-
-**Commute-aware comparison:** Road-based travel estimates complement straight-line distance.
-
-**Explainable recommendations:** The ranking formula and weights are visible rather than hidden behind an opaque score.
-
-**End-to-end product thinking:** Search, filtering, authentication, saving, comparing, history, and feedback form a connected workflow.
-
----
-
-## 👨‍💻 Project Information
-
-**Project:** PGPilot — Commute-Aware PG Finder  
-**Category:** Full-Stack Web Development  
-**Repository:** https://github.com/AAQUIL-16/PGPilot  
-**Live demo:** https://pgpilot-finder.vercel.app
-
-### Acknowledgments
-
-Listing and routing information is provided through their respective third-party services, subject to their availability, usage policies, and terms. All product names and trademarks belong to their respective owners.
+- **Source code:** https://github.com/AAQUIL-16/PGPilot
+- **Production frontend:** https://pg-pilot.vercel.app/ *(verify exact URL)*
+- **Render backup preview:** https://pg-pilot-git-render-backup-test-aaquil-16.vercel.app/
+- **Primary API health:** https://pgpilot-api.wonderfulocean-f778d0aa.centralindia.azurecontainerapps.io/api/health
+- **Render API health:** https://pgpilot.onrender.com/api/health
 
 ---
 
 <div align="center">
 
-**PGPilot — Find a place that fits your life.**
-
-⭐ If this project is useful, consider starring the repository.
+**Built to make PG discovery more informed, commute-aware, and transparent.**
 
 </div>
