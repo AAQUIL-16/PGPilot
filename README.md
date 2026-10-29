@@ -11,7 +11,6 @@
 
 </div>
 
-> **Live URL note:** Confirm the production Vercel URL above before publishing this README. The Render preview URL is a test deployment, not the production website.
 
 ---
 
