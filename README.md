@@ -7,7 +7,7 @@
 
 [![React](https://img.shields.io/badge/Frontend-React-149ECA?logo=react&logoColor=white)](https://react.dev/) [![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/) [![PostgreSQL](https://img.shields.io/badge/Database-Neon%20PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://neon.tech/) [![Azure](https://img.shields.io/badge/Cloud-Azure%20Container%20Apps-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/products/container-apps/) [![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/) [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
-[**Live Application**](https://pg-pilot.vercel.app/) · [**Render Backup Preview**](https://pg-pilot-git-render-backup-test-aaquil-16.vercel.app/) · [**Repository**](https://github.com/AAQUIL-16/PGPilot)
+[**Live Application**](https://pgpilot-finder.vercel.app/) · [**Render Backup Preview**](https://pg-pilot-git-render-backup-test-aaquil-16.vercel.app/) · [**Repository**](https://github.com/AAQUIL-16/PGPilot)
 
 </div>
 
