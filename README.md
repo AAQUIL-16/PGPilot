@@ -210,7 +210,7 @@ Additional API groups include authentication, favorites, profiles, statistics, f
 ## Project Links
 
 - **Source code:** https://github.com/AAQUIL-16/PGPilot
-- **Production frontend:** https://pg-pilot.vercel.app/ *(verify exact URL)*
+- **Production frontend:** https://pgpilot-finder.vercel.app/ 
 - **Render backup preview:** https://pg-pilot-git-render-backup-test-aaquil-16.vercel.app/
 - **Primary API health:** https://pgpilot-api.wonderfulocean-f778d0aa.centralindia.azurecontainerapps.io/api/health
 - **Render API health:** https://pgpilot.onrender.com/api/health
